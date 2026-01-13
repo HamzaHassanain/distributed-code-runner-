@@ -1,0 +1,52 @@
+name: runner-service
+services:
+  runner-api:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    container_name: runner-api
+    restart: always
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGO_URL=mongodb://mongodb:27017/runner_db
+      - POSTGRES_HOST=postgres  
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=judge0
+      - JUDGE0_URL=http://judge0-lb:2358
+      - AUTHN_TOKEN=secret_token_123
+    networks:
+      - editor-mini-private
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  runner-lb:
+    image: nginx:alpine
+    container_name: runner-lb
+    restart: always
+    ports:
+      - "4000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - editor-mini-public
+      - editor-mini-private
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  editor-mini-public:
+    external: true
+  editor-mini-private:
+    external: true
