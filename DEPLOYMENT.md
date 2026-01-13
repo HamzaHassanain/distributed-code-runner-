@@ -79,13 +79,24 @@ use `ip addr show eth1` to find the **Private IP** of each droplet.
     services:
       client:
         image: your-dockerhub-user/code-client:latest
-        ports: ["80:3000"]
+        restart: always
         environment:
-          # Point to the Private IP of the Runner Droplet
           - RUNNER_API_URL=http://<PRIVATE-IP-OF-RUNNER>:4000
           - MONGO_URL=<MONGO_CONNECTION_STRING>
+        
+      # Automatic HTTPS Reverse Proxy
+      caddy:
+        image: caddy:latest
+        restart: always
+        ports:
+          - "80:80"
+          - "443:443"
+        command: caddy reverse-proxy --from your-domain.com --to client:3000
+        depends_on:
+          - client
     ```
-2.  **Run**: `docker compose up -d`
+2.  **DNS Setup**: Point your domain's **A Record** to the Public IP of this separate `client` Droplet.
+3.  **Run**: `docker compose up -d`. Caddy will automatically acquire an SSL certificate.
 
 ### 2. Droplet: `runner` (API Gateway)
 *   **Goal**: Authenticate and forward.

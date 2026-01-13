@@ -8,7 +8,8 @@ The system is composed of three primary logical layers: the **Presentation Layer
 
 ```mermaid
 graph TD
-    User((User)) -->|HTTP/HTTPS| Client[Code Client]
+    User((User)) -->|HTTPS| Caddy[Caddy Reverse Proxy]
+    Caddy -->|Local| Client[Code Client]
     Client -->|REST API| Gateway[Runner API Gateway]
     
     subgraph "Secure Zone (Private Network)"
@@ -37,7 +38,7 @@ graph TD
 *   **Tech Stack**: Next.js (React), Tailwind CSS.
 *   **Responsibility**: Provides the IDE interface for users to write and submit code.
 *   **Data Access**: Connects directly to **MongoDB** to handle User Authentication (signup/login) and CRUD operations for saving user code snippets.
-*   **Security**: This is the *only* component accessible to the public internet. It communicates with the Runner Service for code execution and MongoDB for data persistence.
+*   **Security**: Exposed via **HTTPS** (using Caddy Reverse Proxy). This is the *only* component accessible to the public internet.
 
 ### 2. Orchestration Layer Used: `runner-api`
 *   **Tech Stack**: Node.js (Express), Nginx.
