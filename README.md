@@ -82,9 +82,32 @@ For a detailed, step-by-step production deployment guide, including network secu
 
 ## Local Development (Simulation)
 
-For local testing, you can simulate this entire distributed topology using Docker Compose.
+You can simulate the entire distributed topology locally using Docker Compose. The project uses a **Makefile** to orchestrate the complex multi-service setup.
 
+### Prerequisites
+*   Docker & Docker Compose
+*   Make (usually pre-installed on Linux/Mac)
+
+### Quick Start
 ```bash
-# Start the full simulation
-npm run start:all
+# 1. Create Simulation Networks
+make setup
+
+# 2. Start All Services
+make start-all
 ```
+
+### ⚡ Live Development (Hot Reload)
+Both the **Code Client** (Next.js) and **Runner Service** (Express) are configured with Docker Volumes for hot-reloading.
+*   **No Rebuilds Needed**: You can edit source files in `code-client/` or `code-runner-service/server/` locally.
+*   **Instant Updates**: Changes are reflected immediately in the running containers.
+
+### Management Commands
+| Command | Description |
+| :--- | :--- |
+| `make help` | Show all available commands. |
+| `make start-all` | Starts the entire cluster (Client, Gateway, Judge0, DBs). |
+| `make stop-all` | Stops all services. |
+| `make status` | Shows the status of all containers. |
+| `make logs-client` | Follow logs for the Frontend. |
+| `make logs-runner` | Follow logs for the API Gateway. |
