@@ -12,7 +12,7 @@ graph TD
     Client -->|REST API| Gateway[Runner API Gateway]
     
     subgraph "Secure Zone (Private Network)"
-        Gateway -->|Authenticated| LB[Internal Load Balancer]
+        Gateway -->|Authenticated| LB[DigitalOcean Managed LB]
         client_db_conn[Client DB Access] -.->|Auth/CRUD| Mongo[(MongoDB)]
         Client --> client_db_conn
         

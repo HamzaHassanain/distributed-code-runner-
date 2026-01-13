@@ -6,11 +6,11 @@ This guide provides step-by-step instructions for deploying the Distributed Code
 
 Each service will run on its own isolated "Droplet" (Virtual Machine). Private communication will happen exclusively over DigitalOcean's VPC network.
 
-| Droplet Name | Role | Docker Service | Visibility |
+| Role | Droplet/Resource Name | Docker Service | Visibility |
 | :--- | :--- | :--- | :--- |
-| **`client`** | Frontend | `code-client` | **Public** (Ports 80/443) |
-| **`runner`** | Gateway | `runner-api` | **Private** (VPC Only) |
-| **`judge0-lb`** | Load Balancer | `judge0-lb` | **Private** (VPC Only) |
+| **`client`** | Frontend Droplet | `code-client` | **Public** (Ports 80/443) |
+| **`runner`** | Gateway Droplet | `runner-api` | **Private** (VPC Only) |
+| **Load Balancer** | **DO Managed LB** | *Managed Service* | **Private** (VPC Only) |
 | **`judge0-srv-1`** | Execution Server | `judge0-server` | **Private** (VPC Only) |
 | **`judge0-srv-2`** | Execution Server | `judge0-server` | **Private** (VPC Only) |
 | **`judge0-wkr-1`** | Execution Worker | `judge0-worker` | **Private** (VPC Only) |
@@ -105,33 +105,19 @@ use `ip addr show eth1` to find the **Private IP** of each droplet.
     ```
 2.  **Run**: `docker compose up -d`
 
-### 3. Droplet: `judge0-lb` (Internal Load Balancer)
-*   **Goal**: Balance load between server nodes.
-*   **Private Address**: Find it (e.g., `10.x.x.12`).
+### 3. Create Managed Load Balancer (Internal)
+Instead of a self-hosted Nginx droplet, we use a DigitalOcean Load Balancer for high availability.
 
-1.  **Configure Nginx**: Create `nginx.conf`.
-    ```nginx
-    events { worker_connections 1024; }
-    http {
-        upstream execution_nodes {
-            # THE PRIVATE IPs OF YOUR SERVER NODES
-            server <PRIVATE-IP-OF-JUDGE0-SRV-1>:2358;
-            server <PRIVATE-IP-OF-JUDGE0-SRV-2>:2358;
-        }
-        server {
-            listen 2358;
-            location / {
-                proxy_pass http://execution_nodes;
-            }
-        }
-    }
-    ```
-2.  **Run Nginx**:
-    ```bash
-    docker run -d -p 2358:2358 --name lb \
-      -v $(pwd)/nginx.conf:/etc/nginx/nginx.conf:ro \
-      nginx:alpine
-    ```
+1.  **Create Load Balancer**:
+    *   **Region**: `fra1` (Same as VPC).
+    *   **Network Visibility**: **Internal (Private)**. This ensures it's only accessible from other Droplets in the VPC.
+    *   **Forwarding Rules**:
+        *   TCP 2358 -> TCP 2358.
+    *   **Droplets**: Add your `judge0-srv-1` and `judge0-srv-2`.
+    *   **Health Check**:
+        *   Protocol: HTTP
+        *   Path: `/version` (or `/health`)
+        *   Port: 2358
 
 ### 4. Droplets: `judge0-srv-1` & `judge0-srv-2`
 *   **Goal**: Accept submissions, push to Redis.
