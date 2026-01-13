@@ -1,85 +1,87 @@
 # Distributed Code Runner Simulation
 
-A distributed code execution pipeline simulating a production-grade architecture for running untrusted code securely. This project demonstrates a multi-service setup using Docker Compose, including a Next.js frontend, an Express.js API gateway, and a scalable Judge0 cluster.
+A production-grade, distributed code execution platform designed to run untrusted code securely and scalably. This system implements a **Shared Nothing Architecture**, decoupling the user-facing client, the API gateway, and the sandboxed execution engine into isolated services.
 
-## Architecture
+## System Architecture
 
-The system is designed to be deployed as a distributed system but is currently simulated locally using Docker Compose networks.
+The system is composed of three primary logical layers: the **Presentation Layer**, the **Orchestration Layer**, and the **Execution Layer**.
 
-### Components
-1.  **Code Client (Frontend)**:
-    *   **Stack**: Next.js (React).
-    *   **Role**: User interface for submitting code.
-    *   **Access**: Publicly accessible (simulated at `http://localhost:3000`).
-2.  **Runner Service (API Gateway)**:
-    *   **Stack**: Node.js (Express), Nginx Load Balancer.
-    *   **Role**: Authenticates requests and forwards code execution jobs to the Judge0 cluster.
-    *   **Access**: Private network only (exposed via LB to Client).
-3.  **Judge0 Cluster (Execution Engine)**:
-    *   **Stack**: Judge0 (Custom Image), Nginx Load Balancer, Redis, PostgreSQL.
-    *   **Role**: Executes code securely in sandboxed environments.
-    *   **Structure**: 2 Server Nodes + 2 Worker Nodes behind a Load Balancer.
-    *   **Security**: Privileged mode for isolation, Authentication Token protection.
-4.  **Databases**:
-    *   **MongoDB**: Data storage for the Client/Runner.
-    *   **Redis**: Shared queue for Judge0.
-    *   **PostgreSQL**: Persistence for Judge0.
-
-### Network Topology (Simulation)
-*   **`editor-mini-public`**: Connects Client ↔ Runner Load Balancer.
-*   **`editor-mini-private`**: Connects Runner API ↔ Internal Services (Judge0, DBs). *Completely isolated from the public.*
-
----
-
-## Local Setup & Commands
-
-This project uses `npm` scripts in the root `package.json` to orchestrate the entire distributed system.
-
-### Prerequisites
-*   Docker & Docker Compose
-*   Node.js (for running scripts)
-
-### Quick Start
-```bash
-# 1. Install dependencies (for scripts)
-npm install
-
-# 2. Setup Networks
-npm run setup
-
-# 3. Start All Services
-npm run start:all
+```mermaid
+graph TD
+    User((User)) -->|HTTP/HTTPS| Client[Code Client]
+    Client -->|REST API| Gateway[Runner API Gateway]
+    
+    subgraph "Secure Zone (Private Network)"
+        Gateway -->|Authenticated| LB[Internal Load Balancer]
+        
+        subgraph "Judge0 Cluster"
+            LB -->|Distribute| Server1[Judge0 Server]
+            LB -->|Distribute| Server2[Judge0 Server]
+            
+            Server1 -->|Enqueue Job| Redis[(Job Queue)]
+            Server2 -->|Enqueue Job| Redis
+            
+            Redis -->|Pop Job| Worker1[Judge0 Worker]
+            Redis -->|Pop Job| Worker2[Judge0 Worker]
+        end
+        
+        Gateway -->|Metadata| Mongo[(MongoDB)]
+        Server1 -->|Result Persist| PG[(PostgreSQL)]
+        Worker1 -->|Update Status| PG
+    end
 ```
 
-### Management Commands
-| Command | Description |
-| :--- | :--- |
-| `npm run start:all` | Starts all services (Client, Runner, Judge0, DBs). |
-| `npm run stop:all` | Stops all services and removes containers. |
-| `npm run status` | Shows the status of all containers. |
-| `npm run logs:<service>` | View logs (e.g., `npm run logs:runner`). |
-| `npm run build:all` | Rebuilds Client and Runner images. |
+### 1. Presentation Layer Used: `code-client`
+*   **Tech Stack**: Next.js (React), Tailwind CSS.
+*   **Responsibility**: Provides the IDE interface for users to write and submit code. It maintains no state and communicates solely with the Runner Service.
+*   **Security**: This is the *only* component accessible to the public internet.
+
+### 2. Orchestration Layer Used: `runner-api`
+*   **Tech Stack**: Node.js (Express), Nginx.
+*   **Responsibility**:
+    *   **Gatekeeper**: Validates requests, handles authentication, and rate-limiting.
+    *   **Router**: Forwards valid execution requests to the internal execution cluster.
+    *   **Isolation**: It acts as a strict proxy; the execution cluster is never exposed directly to the client.
+
+### 3. Execution Layer Used: `judge0`
+The core engine is a customized Judge0 cluster, split into **Servers** and **Workers** for scalability.
+
+*   **Judge0 Server (API Node)**
+    *   Accepts execution requests from the Gateway.
+    *   Validates the payload and pushes the job to the **Redis Job Queue**.
+    *   Does *not* execute user code.
+
+*   **Judge0 Worker (Execution Node)**
+    *   Polls the Redis queue for pending jobs.
+    *   **Sandboxing**: Executes the untrusted code inside isolated containers (creating ephemeral Docker containers for every submission).
+    *   Updates the submission status in **PostgreSQL**.
 
 ---
 
-## Security Features
-*   **Network Isolation**: Strict separation between public (Client) and private (Execution) networks.
-*   **Authentication**: Internal communication between Runner and Judge0 is protected by `AUTHN_TOKEN`.
-*   **Privileged Mode**: Judge0 containers run in privileged mode (`privileged: true`) to ensure proper sandboxing capabilities.
-*   **Health Checks**: All services implement health checks. Nginx load balancers automatically route traffic away from unhealthy nodes.
+## Data Strategy
+
+The system uses specialized data stores for specific needs:
+*   **MongoDB**: Stores user session data, submission history, and client configurations.
+*   **Redis**: High-performance job queue for buffering submissions between the Server and Worker nodes.
+*   **PostgreSQL**: The authoritative store for Judge0 execution results, languages, and system state.
 
 ---
 
-## DigitalOcean Deployment Plan
+## Deployment
 
-The architecture is designed to map 1:1 to a secure DigitalOcean multi-droplet setup.
+The architecture is designed to be physically distributed. In a production environment (e.g., DigitalOcean), each component runs on its own isolated server (Droplet) within a private VPC.
 
-**Target Infrastructure:**
-*   **7 Droplets**: 1 Client, 1 Runner, 1 LB, 2 Judge0 Servers, 2 Judge0 Workers.
-*   **Managed Databases**: MongoDB, PostgreSQL, Redis (Valkey) accessed via VPC.
-*   **Networking**: All backend traffic travels securely over DigitalOcean VPC (Private Network).
-*   **Firewalls**:
-    *   **Public Access**: Blocked on all Droplets except Client (Ports 80/443).
-    *   **Internal Access**: Strict allow-list based on Private IPs (e.g., Runner only accepts traffic from Client).
+For a detailed, step-by-step production deployment guide, including network security rules and strict server isolation, please refer to:
 
-For detailed instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+**[Production Deployment Guide (DEPLOYMENT.md)](DEPLOYMENT.md)**
+
+---
+
+## Local Development (Simulation)
+
+For local testing, you can simulate this entire distributed topology using Docker Compose.
+
+```bash
+# Start the full simulation
+npm run start:all
+```

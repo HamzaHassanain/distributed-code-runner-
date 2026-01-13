@@ -1,131 +1,199 @@
-# DigitalOcean Production Deployment Guide
+# Production Deployment Guide (DigitalOcean)
 
-This guide details exactly how to deploy the Distributed Code Runner to DigitalOcean using a **Standard Multi-Droplet Architecture**.
+This guide provides step-by-step instructions for deploying the Distributed Code Runner on DigitalOcean. We will use a **7-server architecture** to ensure maximum security, scalability, and component isolation.
 
-## 🏗️ Architecture & Network
+## Architecture Overview
 
-We will use **7 Droplets** and **3 Managed Databases**, communicating securely over a **Private VPC Network**.
+Each service will run on its own isolated "Droplet" (Virtual Machine). Private communication will happen exclusively over DigitalOcean's VPC network.
 
-| Role | Droplet Name | Docker Services | Visibility |
+| Droplet Name | Role | Docker Service | Visibility |
 | :--- | :--- | :--- | :--- |
-| **Frontend** | `client` | `code-client` | **Public** (80/443) |
-| **API Gateway** | `runner` | `runner-api`, `runner-lb` | **Private** (VPC) |
-| **Cluster LB** | `judge0-lb` | `judge0-lb` (Nginx) | **Private** (VPC) |
-| **Execution Node** | `judge0-server-1` | `judge0-server` | **Private** (VPC) |
-| **Execution Node** | `judge0-server-2` | `judge0-server` | **Private** (VPC) |
-| **Worker Node** | `judge0-worker-1` | `judge0-worker` | **Private** (VPC) |
-| **Worker Node** | `judge0-worker-2` | `judge0-worker` | **Private** (VPC) |
+| **`client`** | Frontend | `code-client` | **Public** (Ports 80/443) |
+| **`runner`** | Gateway | `runner-api` | **Private** (VPC Only) |
+| **`judge0-lb`** | Load Balancer | `judge0-lb` | **Private** (VPC Only) |
+| **`judge0-srv-1`** | Execution Server | `judge0-server` | **Private** (VPC Only) |
+| **`judge0-srv-2`** | Execution Server | `judge0-server` | **Private** (VPC Only) |
+| **`judge0-wkr-1`** | Execution Worker | `judge0-worker` | **Private** (VPC Only) |
+| **`judge0-wkr-2`** | Execution Worker | `judge0-worker` | **Private** (VPC Only) |
 
 ---
 
-## 1. Preparation Phase (Local Machine)
+## Phase 1: Infrastructure Provisioning
 
-Before creating droplets, build your production images and push them to a registry (Docker Hub or DigitalOcean Container Registry).
+### 1. Create Networking (VPC)
+1.  Go to **Networking** -> **VPC** in DigitalOcean dashboard.
+2.  Create a new VPC (e.g., `runner-vpc`) in your preferred region (e.g., `fra1`).
+3.  **Important**: All Droplets and Databases MUST be in this VPC.
 
-### A. Build Images
-**Client**:
-```bash
-cd code-client
-docker build -t youruser/code-client:latest .
-docker push youruser/code-client:latest
-```
+### 2. Create Managed Databases
+Create the following databases in the `runner-vpc` VPC:
+*   **MongoDB Cluster** (for Client & Runner data)
+*   **PostgreSQL** (for Judge0 persistence)
+*   **Redis** (for Judge0 job queues)
 
-**Runner**:
-```bash
-cd code-runner-service/server
-docker build -t youruser/runner-api:latest .
-docker push youruser/runner-api:latest
-```
+> **Note**: In "Settings" -> "Trusted Sources", initially allow your local IP to set them up, but later we will restrict this to Droplet IPs.
 
-*(Judge0 uses the public image `ghcr.io/shayan-chashm-jahan/judge0-repovive:dev`)*
-
----
-
-## 2. Infrastructure Setup (DigitalOcean)
-
-1.  **Create a VPC**: Ensure all resources are in the same region (e.g., `fra1`) and VPC (`editor-vpc`).
-2.  **Create Managed Databases**:
-    *   MongoDB, PostgreSQL, Redis (Valkey).
-    *   **Secure them**: Go to "Settings" -> "Trusted Sources". We will add Droplets later.
-    *   **Note**: Copy the **Private Network Connection Strings**.
-3.  **Create 7 Droplets**:
-    *   OS: Ubuntu 24.04 (Docker pre-installed image recommended).
-    *   Enable **Private Networking** (VPC).
-4.  **Configure Cloud Firewalls**:
-    *   **FW-Public**: Allow Inbound TCP 80/443. Apply to `client`.
-    *   **FW-Private**: Allow Inbound TCP 4000 & 2358. **Restrict Source** to your VPC CIDR (or specific Droplet Private IPs). Apply to all other droplets.
+### 3. Create Droplets
+Create **7 Droplets** using the **Docker on Ubuntu** Marketplace image.
+*   **Region**: Same as VPC (e.g., `fra1`).
+*   **VPC Network**: Select `runner-vpc`.
+*   **Tags**: `runner-cluster` (useful for firewalls).
+*   **Hostname**: Use the names from the table above (e.g., `client`, `runner`, etc.).
 
 ---
 
-## 3. Configuration Changes & Load Balancers
+## Phase 2: Security & Firewall Setup
 
-On each Droplet, you will run a focused `docker-compose.yml`.
+Go to **Networking** -> **Firewalls** and create two strict firewalls.
 
-### 🚨 Critical Change for All Files
-You must **REMOVE** the `networks` section defining `editor-mini-private` or `public`.
-*   **Intra-Droplet** (e.g., Runner LB -> API): Use default bridge (service names work).
-*   **Inter-Droplet** (e.g., Runner -> Judge0): Use **Private IP Addresses**.
+### Firewall 1: `public-frontend`
+*   **Apply to**: Droplet `client`.
+*   **Inbound Rules**:
+    *   TCP 22 (SSH) - From: Your Personal IP
+    *   TCP 80 (HTTP) - From: All IPv4/IPv6
+    *   TCP 443 (HTTPS) - From: All IPv4/IPv6
+
+### Firewall 2: `private-backend`
+*   **Apply to**: All other droplets (`runner`, `judge0-lb`, `judge0-srv*`, `judge0-wkr*`).
+*   **Inbound Rules**:
+    *   TCP 22 (SSH) - From: Your Personal IP
+    *   TCP 1-65535 (All Ports) - From: **Source VPC Network** (e.g. `10.114.0.0/20`).
+*   **Outbound Rules**:
+    *   ICMP/TCP/UDP - To: All IPv4/IPv6 (Required for fetching updates/packages).
+
+> **Effect**: Only the `client` is accessible from the internet. All other servers are unreachable except via the secure private network.
 
 ---
 
-### Node 1: `client` (Frontend)
-1.  **File**: `code-client/docker-compose.yml`
-2.  **Changes**:
-    *   Image: `youruser/code-client:latest`
-    *   Env `RUNNER_API_URL`: `http://<PRIVATE-IP-OF-RUNNER>:4000`
-    *   Env `MONGO_URL`: Managed DB Connection String.
+## Phase 3: Deployment & Configuration
 
-### Node 2: `runner` (API Gateway)
-Contains `runner-api` and `runner-lb`.
-1.  **File**: `code-runner-service/server/docker-compose.yml`
-2.  **Changes**:
-    *   Image: `youruser/runner-api:latest`
-    *   Env `JUDGE0_URL`: `http://<PRIVATE-IP-OF-JUDGE0-LB>:2358`
-    *   Remove `depends_on`.
-3.  **Check**: Ensure `runner-lb` config (`nginx.conf`) points to `runner-api:4000`. (This works unchanged as they are on the same machine).
+For each droplet, you will SSH in and set up the specific service.
+use `ip addr show eth1` to find the **Private IP** of each droplet.
 
-### Node 3: `judge0-lb` (Cluster Load Balancer)
-This acts as the entry point for the Judge0 cluster.
-1.  **File**: `code-runner-service/judge0/server/docker-compose.yml` (Only the `judge0-lb` service).
-2.  **Nginx Config Change (`nginx.conf`)**:
-    You MUST update the `upstream` block to point to the **Private IPs** of the server droplets.
+### 1. Droplet: `client` (Frontend)
+*   **Goal**: Serve the UI.
+*   **Private Address**: Find it (e.g., `10.x.x.10`).
+
+1.  **Prepare File**: Create `docker-compose.yml`.
+    ```yaml
+    services:
+      client:
+        image: your-dockerhub-user/code-client:latest
+        ports: ["80:3000"]
+        environment:
+          # Point to the Private IP of the Runner Droplet
+          - RUNNER_API_URL=http://<PRIVATE-IP-OF-RUNNER>:4000
+          - MONGO_URL=<MONGO_CONNECTION_STRING>
+    ```
+2.  **Run**: `docker compose up -d`
+
+### 2. Droplet: `runner` (API Gateway)
+*   **Goal**: Authenticate and forward.
+*   **Private Address**: Find it (e.g., `10.x.x.11`).
+
+1.  **Prepare File**: Create `docker-compose.yml`.
+    ```yaml
+    services:
+      runner:
+        image: your-dockerhub-user/runner-api:latest
+        ports: ["4000:4000"]
+        environment:
+          # Point to the Private IP of the Judge0 Load Balancer
+          - JUDGE0_URL=http://<PRIVATE-IP-OF-JUDGE0-LB>:2358
+          - MONGO_URL=<MONGO_CONNECTION_STRING>
+          - AUTH_TOKEN=<SECRET_TOKEN>
+    ```
+2.  **Run**: `docker compose up -d`
+
+### 3. Droplet: `judge0-lb` (Internal Load Balancer)
+*   **Goal**: Balance load between server nodes.
+*   **Private Address**: Find it (e.g., `10.x.x.12`).
+
+1.  **Configure Nginx**: Create `nginx.conf`.
     ```nginx
-    upstream judge0_servers {
-        server <PRIVATE-IP-SERVER-1>:2358;
-        server <PRIVATE-IP-SERVER-2>:2358;
-    }
-    server {
-        listen 2358;
-        location / { proxy_pass http://judge0_servers; ... }
+    events { worker_connections 1024; }
+    http {
+        upstream execution_nodes {
+            # THE PRIVATE IPs OF YOUR SERVER NODES
+            server <PRIVATE-IP-OF-JUDGE0-SRV-1>:2358;
+            server <PRIVATE-IP-OF-JUDGE0-SRV-2>:2358;
+        }
+        server {
+            listen 2358;
+            location / {
+                proxy_pass http://execution_nodes;
+            }
+        }
     }
     ```
+2.  **Run Nginx**:
+    ```bash
+    docker run -d -p 2358:2358 --name lb \
+      -v $(pwd)/nginx.conf:/etc/nginx/nginx.conf:ro \
+      nginx:alpine
+    ```
 
-### Nodes 4 & 5: `judge0-server-1` / `-2`
-1.  **File**: `code-runner-service/judge0/server/docker-compose.yml` (Only the `judge0-server` service).
-2.  **Changes**:
-    *   Ports: `2358:2358`
-    *   Env `REDIS_HOST` / `POSTGRES_HOST`: Managed DB Hostnames.
-    *   `privileged: true` (Keep this!).
+### 4. Droplets: `judge0-srv-1` & `judge0-srv-2`
+*   **Goal**: Accept submissions, push to Redis.
 
-### Nodes 6 & 7: `judge0-worker-1` / `-2`
-1.  **File**: `code-runner-service/judge0/worker/docker-compose.yml`
-2.  **Changes**:
-    *   Env `REDIS_HOST` / `POSTGRES_HOST`: Managed DB Hostnames.
-    *   `privileged: true`.
+1.  **Prepare File**: Create `docker-compose.yml`.
+    ```yaml
+    services:
+      server:
+        image: ghcr.io/shayan-chashm-jahan/judge0-repovive:dev
+        privileged: true
+        restart: always
+        ports: ["2358:2358"]
+        environment:
+          - AUTHN_TOKEN=<SECRET_TOKEN>
+          - REDIS_HOST=<MANAGED-REDIS-HOST>
+          - REDIS_PORT=25061
+          - REDIS_PASSWORD=<REDIS-PASSWORD>
+          - REDIS_TLS=true
+          - POSTGRES_HOST=<MANAGED-POSTGRES-HOST>
+          - POSTGRES_PORT=25060
+          - POSTGRES_USER=doadmin
+          - POSTGRES_PASSWORD=<POSTGRES-PASSWORD>
+          - POSTGRES_DB=defaultdb
+          - POSTGRES_SSL_MODE=require
+    ```
+2.  **Run**: `docker compose up -d`
+
+### 5. Droplets: `judge0-wkr-1` & `judge0-wkr-2`
+*   **Goal**: Poll Redis, execute code.
+
+1.  **Prepare File**: Create `docker-compose.yml`.
+    ```yaml
+    services:
+      worker:
+        image: ghcr.io/shayan-chashm-jahan/judge0-repovive:dev
+        privileged: true
+        restart: always
+        command: ["./scripts/workers"]
+        environment:
+          # Exact same DB/Redis config as Servers
+          - REDIS_HOST=<MANAGED-REDIS-HOST>
+          - REDIS_PORT=25061
+          - REDIS_PASSWORD=<REDIS-PASSWORD>
+          - REDIS_TLS=true
+          - POSTGRES_HOST=<MANAGED-POSTGRES-HOST>
+          - POSTGRES_PORT=25060
+          - POSTGRES_USER=doadmin
+          - POSTGRES_PASSWORD=<POSTGRES-PASSWORD>
+          - POSTGRES_DB=defaultdb
+          - POSTGRES_SSL_MODE=require
+    ```
+2.  **Run**: `docker compose up -d`
 
 ---
 
-## 4. Deployment Steps summary
+## Phase 4: Final Verification
 
-1.  **SSH into each Droplet**.
-2.  **Clone/Copy** only the necessary files for that role.
-3.  **Update `.env`** files with Private IPs and Secrets.
-4.  **Modify Nginx Configs** (for LBs) to use Private IPs.
-5.  **Run**:
-    ```bash
-    docker compose up -d
-    ```
-6.  **Verify**:
-    *   Check `docker ps`.
-    *   Check logs: `docker compose logs -f`.
-    *   Test connectivity: `curl http://localhost:PORT/health`.
+1.  **Access Client**: Open the Public IP of your `client` Droplet in a browser.
+2.  **Submit Code**: Try running a "Hello World" script.
+3.  **Trace Flow**:
+    *   Client -> Runner (Private IP)
+    *   Runner -> Judge0 LB (Private IP)
+    *   Judge0 LB -> Judge0 Server (Private IP) -> Redis
+    *   Judge0 Worker -> Redis -> Execute
+    *   Result flows back.
