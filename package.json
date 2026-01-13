@@ -1,0 +1,58 @@
+{
+  "name": "editor-mini-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:client": "docker compose -f code-client/docker-compose.yml up -d",
+    "stop:client": "docker compose -f code-client/docker-compose.yml down --remove-orphans",
+    "restart:client": "npm run stop:client && npm run start:client",
+    "logs:client": "docker compose -f code-client/docker-compose.yml logs -f",
+    "dev:client": "docker compose -f code-client/docker-compose.yml up",
+    "shell:client": "docker compose -f code-client/docker-compose.yml exec client sh",
+
+    "start:mongo": "docker compose -f mongodb/docker-compose.yml up -d",
+    "stop:mongo": "docker compose -f mongodb/docker-compose.yml down --remove-orphans",
+    "logs:mongo": "docker compose -f mongodb/docker-compose.yml logs -f",
+
+    "start:redis": "docker compose -f code-runner-service/redis/docker-compose.yml up -d",
+    "stop:redis": "docker compose -f code-runner-service/redis/docker-compose.yml down --remove-orphans",
+    "logs:redis": "docker compose -f code-runner-service/redis/docker-compose.yml logs -f",
+
+    "start:postgres": "docker compose -f code-runner-service/postgress/docker-compose.yml up -d",
+    "stop:postgres": "docker compose -f code-runner-service/postgress/docker-compose.yml down --remove-orphans",
+    "logs:postgres": "docker compose -f code-runner-service/postgress/docker-compose.yml logs -f",
+
+    "start:judge0-server": "docker compose -f code-runner-service/judge0/server/docker-compose.yml up -d",
+    "stop:judge0-server": "docker compose -f code-runner-service/judge0/server/docker-compose.yml down --remove-orphans",
+    "logs:judge0-server": "docker compose -f code-runner-service/judge0/server/docker-compose.yml logs -f",
+
+    "start:judge0-worker": "docker compose -f code-runner-service/judge0/worker/docker-compose.yml up -d",
+    "stop:judge0-worker": "docker compose -f code-runner-service/judge0/worker/docker-compose.yml down --remove-orphans",
+    "logs:judge0-worker": "docker compose -f code-runner-service/judge0/worker/docker-compose.yml logs -f",
+
+    "start:runner": "docker compose -f code-runner-service/server/docker-compose.yml up -d",
+    "stop:runner": "docker compose -f code-runner-service/server/docker-compose.yml down --remove-orphans",
+    "restart:runner": "npm run stop:runner && npm run start:runner",
+    "logs:runner": "docker compose -f code-runner-service/server/docker-compose.yml logs -f",
+    "dev:runner": "docker compose -f code-runner-service/server/docker-compose.yml up",
+    "shell:runner": "docker compose -f code-runner-service/server/docker-compose.yml exec runner-api sh",
+
+    "start:all": "npm run start:mongo && npm run start:redis && npm run start:postgres && npm run start:judge0-server && npm run start:judge0-worker && npm run start:runner && npm run start:client",
+    "stop:all": "npm run stop:client && npm run stop:runner && npm run stop:judge0-worker && npm run stop:judge0-server && npm run stop:postgres && npm run stop:redis && npm run stop:mongo",
+    "status": "docker ps --format \"table {{.Names}}\\t{{.Status}}\\t{{.Ports}}\"",
+    
+    "build:client": "docker compose -f code-client/docker-compose.yml build",
+    "build:runner": "docker compose -f code-runner-service/server/docker-compose.yml build --no-cache runner-api",
+    "build:all": "npm run build:client && npm run build:runner",
+
+    "setup:networks": "docker network create editor-mini-public || true && docker network create editor-mini-private || true",
+    "setup": "npm run setup:networks",
+
+    "clean": "docker container prune -f"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
