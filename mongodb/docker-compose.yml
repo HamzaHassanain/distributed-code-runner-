@@ -1,0 +1,24 @@
+name: mongodb
+services:
+  mongodb:
+    image: mongo:latest 
+    container_name: mongodb
+    restart: always
+    volumes:
+      - ./data:/data/db
+    expose:
+      - "27017"
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - editor-mini-private
+      - editor-mini-public
+
+networks:
+  editor-mini-private:
+    external: true
+  editor-mini-public:
+    external: true
