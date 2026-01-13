@@ -1,0 +1,21 @@
+name: code-client
+services:
+  client:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    container_name: code-client
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017/runner_db
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - editor-mini-public
+
+networks:
+  editor-mini-public:
+    external: true
