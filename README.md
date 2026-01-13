@@ -82,4 +82,4 @@ The architecture is designed to map 1:1 to a secure DigitalOcean multi-droplet s
     *   **Public Access**: Blocked on all Droplets except Client (Ports 80/443).
     *   **Internal Access**: Strict allow-list based on Private IPs (e.g., Runner only accepts traffic from Client).
 
-For detailed instructions, including **Docker Swarm** configuration, see [DEPLOYMENT.md](DEPLOYMENT.md).
+For detailed instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
