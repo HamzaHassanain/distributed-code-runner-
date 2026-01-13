@@ -2,7 +2,7 @@
 
 A distributed code execution pipeline simulating a production-grade architecture for running untrusted code securely. This project demonstrates a multi-service setup using Docker Compose, including a Next.js frontend, an Express.js API gateway, and a scalable Judge0 cluster.
 
-## 🚀 Architecture
+## Architecture
 
 The system is designed to be deployed as a distributed system but is currently simulated locally using Docker Compose networks.
 
@@ -31,7 +31,7 @@ The system is designed to be deployed as a distributed system but is currently s
 
 ---
 
-## 🛠️ Local Setup & Commands
+## Local Setup & Commands
 
 This project uses `npm` scripts in the root `package.json` to orchestrate the entire distributed system.
 
@@ -62,7 +62,7 @@ npm run start:all
 
 ---
 
-## 🔒 Security Features
+## Security Features
 *   **Network Isolation**: Strict separation between public (Client) and private (Execution) networks.
 *   **Authentication**: Internal communication between Runner and Judge0 is protected by `AUTHN_TOKEN`.
 *   **Privileged Mode**: Judge0 containers run in privileged mode (`privileged: true`) to ensure proper sandboxing capabilities.
@@ -70,7 +70,7 @@ npm run start:all
 
 ---
 
-## ☁️ DigitalOcean Deployment Plan
+## DigitalOcean Deployment Plan
 
 The architecture is designed to map 1:1 to a secure DigitalOcean multi-droplet setup.
 
@@ -82,4 +82,4 @@ The architecture is designed to map 1:1 to a secure DigitalOcean multi-droplet s
     *   **Public Access**: Blocked on all Droplets except Client (Ports 80/443).
     *   **Internal Access**: Strict allow-list based on Private IPs (e.g., Runner only accepts traffic from Client).
 
-For a detailed deployment guide, see [deployment_plan.md](deployment_plan.md) (if available in artifacts) or review the project documentation.
+For detailed instructions, including **Docker Swarm** configuration, see [DEPLOYMENT.md](DEPLOYMENT.md).
