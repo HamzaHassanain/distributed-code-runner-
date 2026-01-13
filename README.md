@@ -13,6 +13,8 @@ graph TD
     
     subgraph "Secure Zone (Private Network)"
         Gateway -->|Authenticated| LB[Internal Load Balancer]
+        client_db_conn[Client DB Access] -.->|Auth/CRUD| Mongo[(MongoDB)]
+        Client --> client_db_conn
         
         subgraph "Judge0 Cluster"
             LB -->|Distribute| Server1[Judge0 Server]
@@ -25,7 +27,7 @@ graph TD
             Redis -->|Pop Job| Worker2[Judge0 Worker]
         end
         
-        Gateway -->|Metadata| Mongo[(MongoDB)]
+        Gateway -->|Metadata| Mongo
         Server1 -->|Result Persist| PG[(PostgreSQL)]
         Worker1 -->|Update Status| PG
     end
@@ -33,8 +35,9 @@ graph TD
 
 ### 1. Presentation Layer Used: `code-client`
 *   **Tech Stack**: Next.js (React), Tailwind CSS.
-*   **Responsibility**: Provides the IDE interface for users to write and submit code. It maintains no state and communicates solely with the Runner Service.
-*   **Security**: This is the *only* component accessible to the public internet.
+*   **Responsibility**: Provides the IDE interface for users to write and submit code.
+*   **Data Access**: Connects directly to **MongoDB** to handle User Authentication (signup/login) and CRUD operations for saving user code snippets.
+*   **Security**: This is the *only* component accessible to the public internet. It communicates with the Runner Service for code execution and MongoDB for data persistence.
 
 ### 2. Orchestration Layer Used: `runner-api`
 *   **Tech Stack**: Node.js (Express), Nginx.
