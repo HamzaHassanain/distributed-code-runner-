@@ -1,0 +1,65 @@
+name: judge0-server
+services:
+  judge0-server-1:
+    image: ghcr.io/shayan-chashm-jahan/judge0-repovive:dev
+    container_name: judge0-server-1
+    restart: always
+    privileged: true
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=judge0
+      - AUTHN_TOKEN=secret_token_123
+    networks:
+      - editor-mini-private
+    healthcheck:
+      test: ["CMD", "curl", "-H", "X-Auth-Token: secret_token_123", "-f", "http://localhost:2358/version"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  judge0-server-2:
+    image: ghcr.io/shayan-chashm-jahan/judge0-repovive:dev
+    container_name: judge0-server-2
+    restart: always
+    privileged: true
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=judge0
+      - AUTHN_TOKEN=secret_token_123
+    networks:
+      - editor-mini-private
+    healthcheck:
+      test: ["CMD", "curl", "-H", "X-Auth-Token: secret_token_123", "-f", "http://localhost:2358/version"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  judge0-lb:
+    image: nginx:alpine
+    container_name: judge0-lb
+    restart: always
+    expose:
+      - "2358"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - editor-mini-private
+    healthcheck:
+      test: ["CMD", "curl", "-H", "X-Auth-Token: secret_token_123", "-f", "http://localhost:2358/version"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  editor-mini-private:
+    external: true

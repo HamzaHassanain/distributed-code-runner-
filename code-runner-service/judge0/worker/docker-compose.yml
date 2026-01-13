@@ -1,0 +1,46 @@
+name: judge0-worker
+services:
+  judge0-worker-1:
+    image: ghcr.io/shayan-chashm-jahan/judge0-repovive:dev
+    container_name: judge0-worker-1
+    restart: always
+    privileged: true
+    command: ["./scripts/workers"]
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=judge0
+      - AUTHN_TOKEN=secret_token_123
+    networks:
+      - editor-mini-private
+    # Healthcheck for worker is tricky without an endpoint, 
+    # but we can check if process is running. 
+    # Judge0 worker doesn't expose HTTP by default.
+    # Assuming the image has a healthcheck or we can check process.
+    # For now omitting explicit healthcheck if not supported, or using simple pid check.
+
+  judge0-worker-2:
+    image: ghcr.io/shayan-chashm-jahan/judge0-repovive:dev
+    container_name: judge0-worker-2
+    restart: always
+    privileged: true
+    command: ["./scripts/workers"]
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=judge0
+      - AUTHN_TOKEN=secret_token_123
+    networks:
+      - editor-mini-private
+
+networks:
+  editor-mini-private:
+    external: true
