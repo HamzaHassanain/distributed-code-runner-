@@ -125,11 +125,28 @@ function authMiddleware(
   res: express.Response,
   next: express.NextFunction
 ) {
+  // 1. Check for Service Token (Internal/Client-to-Service Trust)
+  const serviceToken = req.headers["x-auth-token"];
+  if (ENV.JUDGE0_AUTHN_TOKEN && serviceToken === ENV.JUDGE0_AUTHN_TOKEN) {
+    // Valid service token - allow, but still try to extract user if present
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace(/^[Bb]earer\s+/, "");
+    if (token) {
+       (req as any).user = verifyToken(token);
+    } else {
+       // Service call without user context (e.g. system tasks)
+       (req as any).user = { userId: "system", role: "admin" }; 
+    }
+    return next();
+  }
+
+  // 2. If no valid service token, check for User JWT
+  // (Optional: You could strictly enforce service token AND user token if desired)
+  
   const authHeader = req.headers.authorization;
   const token = authHeader?.replace(/^[Bb]earer\s+/, "");
 
   if (!token) {
-    // No token = guest user (still allowed, rate limited)
     (req as any).user = null;
     return next();
   }

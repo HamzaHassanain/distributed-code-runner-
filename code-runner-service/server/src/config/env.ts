@@ -6,8 +6,8 @@ export const ENV = {
   MONGODB_URI:
     process.env.MONGO_URL || "mongodb://localhost:27017/runner_db",
   JUDGE0_URL: process.env.JUDGE0_URL || "http://judge0-lb:2358",
-  JUDGE0_AUTHN_TOKEN: process.env.AUTHN_TOKEN,
-  JWT_SECRET: process.env.JWT_SECRET,
+  JUDGE0_AUTHN_TOKEN: process.env.AUTHN_TOKEN || "secret_token_123",
+  JWT_SECRET: process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production",
   // CORS Configuration
   CORS_ORIGINS: process.env.CORS_ORIGINS?.split(",") || [
     "http://localhost:3000",
