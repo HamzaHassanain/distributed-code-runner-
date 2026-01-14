@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Code Runner Client
+
+A specialized frontend application for the Distributed Code Runner platform. This is the **Presentation Layer** of the system, providing a modern, dark-themed IDE experience for users to write, run, and test code securely.
+
+It connects to the **Runner API Gateway** for execution and **MongoDB** for user session management.
+
+## Features
+
+### Authentication & Sessions
+*   **Secure Sign Up/Login**: JWT-based session management.
+*   **Guest Access**: Immediate "Continue as Guest" mode for ephemeral sessions.
+*   **Persistent State**: User code history and settings are saved to MongoDB.
+
+### Code Editor
+*   **Multi-Language Support**: Python, JavaScript, C++, Java, TypeScript, and more.
+*   **Syntax Highlighting**: Powered by **CodeMirror 6** for a rich editing experience.
+*   **Dual View Modes**:
+    *   **Standard**: Simple stdin/stdout interaction.
+    *   **Test Cases**: Create, run, and validate against multiple I/O test cases.
+
+### Performance & UX
+*   **Optimized Builds**: Using Next.js `output: "standalone"` for minimal Docker images.
+*   **Modular Architecture**: Component-based design for maintainability.
+*   **Responsive UI**: Fully responsive layout with a custom dark theme.
+
+---
+
+## Tech Stack
+
+*   **Framework**: [Next.js 16](https://nextjs.org/) (App Directory)
+*   **Language**: TypeScript
+*   **Styling**: Tailwind CSS + CSS Variables
+*   **Editor Engine**: [CodeMirror 6](https://codemirror.net/) (`@uiw/react-codemirror`)
+*   **Icons**: Custom SVG Component Library
+
+---
+
+## Project Structure
+
+```bash
+code-client/
+├── app/                  # Next.js App Directory
+│   ├── editor/           # Editor Page
+│   └── page.tsx          # Auth/Landing Page
+├── components/           # Reusable Components
+│   ├── auth/             # Authentication Modules
+│   ├── editor/           # Editor Modules
+│   ├── ui/               # UI Primitives (Buttons, Inputs)
+│   └── icons/            # SVG Icons
+├── lib/                  # Utilities & Types
+│   ├── auth/             # Auth logic & JWT handling
+│   └── execution/        # Code execution types
+└── public/               # Static assets
+```
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+*   Node.js 18+ (if running without Docker)
+*   Docker & Docker Compose (recommended)
+
+### Running with Docker (Recommended)
+This client is designed to run as part of the larger distributed system. Use the root `Makefile` to start the full stack:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# In the project root
+make start-all
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Running Locally (Development)
+To run the client in isolation (connected to local services):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1.  **Install Dependencies**:
+    ```bash
+    npm install
+    ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2.  **Configure Environment**:
+    Create a `.env.local` file:
+    ```env
+    MONGODB_URI=mongodb://localhost:27017/runner_db
+    JWT_SECRET=your_development_secret
+    ```
 
-## Learn More
+3.  **Start Development Server**:
+    ```bash
+    npm run dev
+    ```
+    Access the app at `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
