@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, forwardRef, useImperativeHandle, useRef } from "react";
 import dynamic from "next/dynamic";
 
 const CodeMirrorEditor = dynamic(() => import("@uiw/react-codemirror"), {
@@ -42,63 +42,87 @@ const CODEMIRROR_BASIC_SETUP = {
   closeBrackets: true,
 } as const;
 
+export interface CodeEditorHandle {
+  getValue: () => string;
+  setValue: (value: string) => void;
+}
+
 interface CodeEditorProps {
-  value: string;
-  onChange: (value: string) => void;
+  initialValue?: string;
   languageId: number;
   className?: string;
+  onChange?: (value: string) => void;
 }
 
-export function CodeEditor({
-  value,
-  onChange,
-  languageId,
-  className = "",
-}: CodeEditorProps) {
-  const [langExt, setLangExt] = useState<unknown>(null);
+export const CodeEditor = forwardRef<CodeEditorHandle, CodeEditorProps>(
+  ({ initialValue = "", languageId, className = "", onChange }, ref) => {
+    const [value, setValue] = useState(initialValue);
+    const [langExt, setLangExt] = useState<unknown>(null);
+    const valueRef = useRef(value);
 
-  useEffect(() => {
-    let cancelled = false;
+    // Keep ref in sync with state for access in generic ways if needed.
+    useEffect(() => {
+        valueRef.current = value;
+    }, [value]);
 
-    const loadLang = async () => {
-      const loader = langExtensions[languageId];
-      if (loader) {
-        try {
-          const ext = await loader();
-          if (!cancelled) {
-            setLangExt(ext.default);
+    useImperativeHandle(ref, () => ({
+      getValue: () => valueRef.current,
+      setValue: (newValue: string) => {
+        setValue(newValue);
+        valueRef.current = newValue;
+      },
+    }));
+
+    const handleChange = (val: string) => {
+      setValue(val);
+      onChange?.(val);
+    };
+
+    useEffect(() => {
+      let cancelled = false;
+
+      const loadLang = async () => {
+        const loader = langExtensions[languageId];
+        if (loader) {
+          try {
+            const ext = await loader();
+            if (!cancelled) {
+              setLangExt(ext.default);
+            }
+          } catch {
+            console.error("Failed to load language extension");
           }
-        } catch {
-          console.error("Failed to load language extension");
         }
-      }
-    };
+      };
 
-    loadLang();
+      loadLang();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [languageId]);
+      return () => {
+        cancelled = true;
+      };
+    }, [languageId]);
 
-  const extensions = useMemo(
-    () => (langExt ? [langExt as never] : []),
-    [langExt],
-  );
+    const extensions = useMemo(
+      () => (langExt ? [langExt as never] : []),
+      [langExt],
+    );
 
-  return (
-    <div className={`flex-1 overflow-hidden ${className}`}>
-      <CodeMirrorEditor
-        value={value}
-        onChange={onChange}
-        height="100%"
-        theme="dark"
-        extensions={extensions}
-        className="h-full"
-        basicSetup={CODEMIRROR_BASIC_SETUP}
-      />
-    </div>
-  );
-}
+    return (
+      <div className={`flex-1 overflow-hidden ${className}`}>
+        <CodeMirrorEditor
+          value={value}
+          onChange={handleChange}
+          height="100%"
+          theme="dark"
+          extensions={extensions}
+          className="h-full"
+          basicSetup={CODEMIRROR_BASIC_SETUP}
+        />
+      </div>
+    );
+  },
+);
+
+CodeEditor.displayName = "CodeEditor";
 
 export default CodeEditor;
