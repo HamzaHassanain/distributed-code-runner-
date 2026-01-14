@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 
-// Dynamically import CodeMirror to avoid SSR issues
 const CodeMirrorEditor = dynamic(() => import("@uiw/react-codemirror"), {
   ssr: false,
   loading: () => (
@@ -13,18 +12,26 @@ const CodeMirrorEditor = dynamic(() => import("@uiw/react-codemirror"), {
   ),
 });
 
-// Language extensions (loaded dynamically)
 const langExtensions: Record<number, () => Promise<{ default: unknown }>> = {
-  71: () => import("@codemirror/lang-python").then((m) => ({ default: m.python() })),
-  63: () => import("@codemirror/lang-javascript").then((m) => ({ default: m.javascript() })),
+  71: () =>
+    import("@codemirror/lang-python").then((m) => ({ default: m.python() })),
+  63: () =>
+    import("@codemirror/lang-javascript").then((m) => ({
+      default: m.javascript(),
+    })),
   54: () => import("@codemirror/lang-cpp").then((m) => ({ default: m.cpp() })),
-  62: () => import("@codemirror/lang-javascript").then((m) => ({ default: m.javascript() })),
-  74: () => import("@codemirror/lang-javascript").then((m) => ({ default: m.javascript({ typescript: true }) })),
+  62: () =>
+    import("@codemirror/lang-javascript").then((m) => ({
+      default: m.javascript(),
+    })),
+  74: () =>
+    import("@codemirror/lang-javascript").then((m) => ({
+      default: m.javascript({ typescript: true }),
+    })),
   73: () => import("@codemirror/lang-cpp").then((m) => ({ default: m.cpp() })),
   60: () => import("@codemirror/lang-cpp").then((m) => ({ default: m.cpp() })),
 };
 
-// CodeMirror basic setup
 const CODEMIRROR_BASIC_SETUP = {
   lineNumbers: true,
   highlightActiveLineGutter: true,
@@ -42,9 +49,6 @@ interface CodeEditorProps {
   className?: string;
 }
 
-/**
- * CodeMirror-based code editor component with language support
- */
 export function CodeEditor({
   value,
   onChange,
@@ -53,7 +57,6 @@ export function CodeEditor({
 }: CodeEditorProps) {
   const [langExt, setLangExt] = useState<unknown>(null);
 
-  // Load language extension when languageId changes
   useEffect(() => {
     let cancelled = false;
 
@@ -78,10 +81,9 @@ export function CodeEditor({
     };
   }, [languageId]);
 
-  // Memoize extensions array
   const extensions = useMemo(
     () => (langExt ? [langExt as never] : []),
-    [langExt]
+    [langExt],
   );
 
   return (

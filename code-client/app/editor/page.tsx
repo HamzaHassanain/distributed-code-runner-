@@ -19,7 +19,6 @@ import {
   type TestCaseResult,
 } from "@/lib/execution/types";
 
-// Default code templates per language
 const CODE_TEMPLATES: Record<number, string> = {
   71: `# Python 3
 def main():
@@ -85,39 +84,25 @@ rl.on('line', (line: string) => {
 `,
 };
 
-// Initial test case
 const INITIAL_TEST_CASES: TestCase[] = [{ input: "5", expectedOutput: "10" }];
 
 type ViewMode = "standard" | "testcases";
 
-/**
- * Code Editor Page
- * 
- * Features:
- * - CodeMirror integration with syntax highlighting
- * - Multi-language support (Python, JavaScript, C++, Java, TypeScript, Rust, Go)
- * - Standard mode (stdin/stdout) and Test Cases mode
- * - Mock code execution with visual feedback
- * - User authentication status display
- */
 export default function EditorPage() {
   const router = useRouter();
   const { user, token, isLoading, isGuest, logout } = useAuth();
 
-  // Editor state
   const [code, setCode] = useState("");
   const [languageId, setLanguageId] = useState(71);
   const [stdin, setStdin] = useState("");
   const [output, setOutput] = useState<ExecutionResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
-  // Test cases state
   const [viewMode, setViewMode] = useState<ViewMode>("standard");
   const [testCases, setTestCases] = useState<TestCase[]>(INITIAL_TEST_CASES);
   const [testResults, setTestResults] = useState<TestCaseResult[] | null>(null);
   const [isRunningTests, setIsRunningTests] = useState(false);
 
-  // Load template on language change
   useEffect(() => {
     const template = CODE_TEMPLATES[languageId];
     if (template) {
@@ -125,26 +110,25 @@ export default function EditorPage() {
     }
   }, [languageId]);
 
-  // Memoized request headers
   const requestHeaders = useMemo(() => {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
     return headers;
   }, [token]);
 
-  // Memoized language list for header
   const languageList = useMemo(
     () =>
       Object.entries(LANGUAGES).map(([id, lang]) => ({
         id: Number(id),
         name: lang.name,
       })),
-    []
+    [],
   );
 
-  // Execute code (single run)
   const handleRun = useCallback(async () => {
     setIsRunning(true);
     setOutput(null);
@@ -160,7 +144,7 @@ export default function EditorPage() {
       setOutput(
         data.success && data.result
           ? data.result
-          : createErrorResult(data.error || "Execution failed")
+          : createErrorResult(data.error || "Execution failed"),
       );
     } catch (error) {
       console.error("Execution error:", error);
@@ -170,7 +154,6 @@ export default function EditorPage() {
     }
   }, [code, languageId, stdin, requestHeaders]);
 
-  // Run test cases
   const handleRunTests = useCallback(async () => {
     setIsRunningTests(true);
     setTestResults(null);
@@ -193,7 +176,6 @@ export default function EditorPage() {
     }
   }, [code, languageId, testCases, requestHeaders]);
 
-  // Combined run handler
   const handleRunClick = useCallback(() => {
     if (viewMode === "standard") {
       handleRun();
@@ -202,7 +184,6 @@ export default function EditorPage() {
     }
   }, [viewMode, handleRun, handleRunTests]);
 
-  // Test case handlers
   const handleAddTestCase = useCallback(() => {
     setTestCases((prev) => [...prev, { input: "", expectedOutput: "" }]);
   }, []);
@@ -219,10 +200,9 @@ export default function EditorPage() {
         return updated;
       });
     },
-    []
+    [],
   );
 
-  // Navigation handlers
   const handleLogout = useCallback(() => {
     logout();
     router.push("/");
@@ -232,11 +212,9 @@ export default function EditorPage() {
     router.push("/");
   }, [router]);
 
-  // Derived state
   const isExecuting = isRunning || isRunningTests;
   const runButtonLabel = viewMode === "standard" ? "Run" : "Run Tests";
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--background)]">
@@ -271,11 +249,7 @@ export default function EditorPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Code Editor Panel */}
         <div className="flex w-1/2 flex-col border-r border-[var(--border)]">
-          <CodeEditor
-            value={code}
-            onChange={setCode}
-            languageId={languageId}
-          />
+          <CodeEditor value={code} onChange={setCode} languageId={languageId} />
         </div>
 
         {/* Right Panel */}
@@ -300,7 +274,6 @@ export default function EditorPage() {
   );
 }
 
-// Helper function to create error result
 function createErrorResult(message: string): ExecutionResult {
   return {
     stdout: null,

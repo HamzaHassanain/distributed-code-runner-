@@ -13,9 +13,6 @@ const typeStyles = {
   info: "bg-[rgba(59,130,246,0.1)] text-[var(--accent)]",
 };
 
-/**
- * Alert component for displaying feedback messages
- */
 export function Alert({ type, message, className = "" }: AlertProps) {
   if (!message) return null;
 

@@ -1,9 +1,9 @@
 "use client";
 
 interface LogoProps {
-  className?: string; // Additional classes for the container
-  size?: "sm" | "md" | "lg" | "xl"; // Responsive sizing
-  showText?: boolean; // Toggle text visibility
+  className?: string;
+  size?: "sm" | "md" | "lg" | "xl";
+  showText?: boolean;
 }
 
 const sizeClasses = {
@@ -20,17 +20,15 @@ const iconSizes = {
   xl: "h-10 w-10",
 } as const;
 
-/**
- * Brand Logo Component
- * Renders the CodeRunner logo with consistent styling and gradient text.
- */
 export function Logo({
   className = "",
   size = "md",
   showText = true,
 }: LogoProps) {
   return (
-    <div className={`flex items-center gap-2 font-bold tracking-tight ${className}`}>
+    <div
+      className={`flex items-center gap-2 font-bold tracking-tight ${className}`}
+    >
       {/* Icon Shape */}
       <div
         className={`flex items-center justify-center rounded-lg bg-[var(--accent)] text-white shadow-lg shadow-blue-500/20 ${iconSizes[size]}`}
@@ -53,7 +51,8 @@ export function Logo({
         <span
           className={`${sizeClasses[size]}`}
           style={{
-            background: "linear-gradient(135deg, var(--accent) 0%, #a855f7 100%)",
+            background:
+              "linear-gradient(135deg, var(--accent) 0%, #a855f7 100%)",
             WebkitBackgroundClip: "text",
             backgroundClip: "text",
             color: "transparent",

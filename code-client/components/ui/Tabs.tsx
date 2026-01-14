@@ -16,9 +16,6 @@ interface TabsProps {
   className?: string;
 }
 
-/**
- * Reusable tab navigation component
- */
 export function Tabs({
   tabs,
   activeTab,
@@ -47,12 +44,7 @@ interface TabButtonProps {
   onClick: (value: TabValue) => void;
 }
 
-export function TabButton({
-  value,
-  label,
-  isActive,
-  onClick,
-}: TabButtonProps) {
+export function TabButton({ value, label, isActive, onClick }: TabButtonProps) {
   const handleClick = useCallback(() => {
     onClick(value);
   }, [onClick, value]);

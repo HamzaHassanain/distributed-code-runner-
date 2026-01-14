@@ -1,6 +1,3 @@
-// UI Components - Barrel Export
-// Provides a clean import interface for all UI components
-
 export { Spinner } from "./Spinner";
 export { Button } from "./Button";
 export { Input } from "./Input";
@@ -11,4 +8,3 @@ export { Badge } from "./Badge";
 export { Tabs } from "./Tabs";
 export { Alert } from "./Alert";
 export { Logo } from "./Logo";
-

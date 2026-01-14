@@ -7,39 +7,35 @@ interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   error?: string;
 }
 
-/**
- * Reusable textarea component with label and error state
- */
-export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function TextArea(
-  { label, error, id, className = "", ...props },
-  ref
-) {
-  const textareaId = id || label?.toLowerCase().replace(/\s+/g, "-");
+export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
+  function TextArea({ label, error, id, className = "", ...props }, ref) {
+    const textareaId = id || label?.toLowerCase().replace(/\s+/g, "-");
 
-  return (
-    <div className="w-full">
-      {label && (
-        <label
-          htmlFor={textareaId}
-          className="mb-1.5 block text-sm font-medium text-[var(--foreground-muted)]"
-        >
-          {label}
-        </label>
-      )}
-      <textarea
-        ref={ref}
-        id={textareaId}
-        className={`textarea ${error ? "input-error" : ""} ${className}`}
-        aria-invalid={!!error}
-        {...props}
-      />
-      {error && (
-        <p className="mt-1 text-xs text-[var(--error)]" role="alert">
-          {error}
-        </p>
-      )}
-    </div>
-  );
-});
+    return (
+      <div className="w-full">
+        {label && (
+          <label
+            htmlFor={textareaId}
+            className="mb-1.5 block text-sm font-medium text-[var(--foreground-muted)]"
+          >
+            {label}
+          </label>
+        )}
+        <textarea
+          ref={ref}
+          id={textareaId}
+          className={`textarea ${error ? "input-error" : ""} ${className}`}
+          aria-invalid={!!error}
+          {...props}
+        />
+        {error && (
+          <p className="mt-1 text-xs text-[var(--error)]" role="alert">
+            {error}
+          </p>
+        )}
+      </div>
+    );
+  },
+);
 
 export default TextArea;

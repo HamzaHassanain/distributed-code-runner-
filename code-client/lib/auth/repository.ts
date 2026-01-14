@@ -5,24 +5,21 @@ import type { User, UserDocument } from "./types";
 
 const USERS_COLLECTION = "users";
 
-// Type for user document with string _id (after conversion from MongoDB)
 interface UserDocumentWithStringId extends Omit<UserDocument, "_id"> {
   _id: string;
 }
 
-/**
- * Create a new user in the database
- */
 export async function createUser(
   email: string,
   password: string,
-  name: string
+  name: string,
 ): Promise<User> {
   const db = await getDatabase();
   const usersCollection = db.collection(USERS_COLLECTION);
 
-  // Check if user already exists
-  const existingUser = await usersCollection.findOne({ email: email.toLowerCase() });
+  const existingUser = await usersCollection.findOne({
+    email: email.toLowerCase(),
+  });
   if (existingUser) {
     throw new Error("User with this email already exists");
   }
@@ -51,11 +48,9 @@ export async function createUser(
   };
 }
 
-/**
- * Find a user by email
- * Returns user with password for authentication
- */
-export async function findUserByEmail(email: string): Promise<UserDocumentWithStringId | null> {
+export async function findUserByEmail(
+  email: string,
+): Promise<UserDocumentWithStringId | null> {
   const db = await getDatabase();
   const usersCollection = db.collection(USERS_COLLECTION);
 
@@ -73,9 +68,6 @@ export async function findUserByEmail(email: string): Promise<UserDocumentWithSt
   };
 }
 
-/**
- * Find a user by ID
- */
 export async function findUserById(id: string): Promise<User | null> {
   const db = await getDatabase();
   const usersCollection = db.collection(USERS_COLLECTION);
@@ -87,7 +79,6 @@ export async function findUserById(id: string): Promise<User | null> {
   const user = await usersCollection.findOne({ _id: new ObjectId(id) });
   if (!user) return null;
 
-  // Return without password
   return {
     _id: user._id.toString(),
     email: user.email as string,

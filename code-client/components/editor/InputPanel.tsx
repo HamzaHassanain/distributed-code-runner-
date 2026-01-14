@@ -7,15 +7,12 @@ interface InputPanelProps {
   onChange: (value: string) => void;
 }
 
-/**
- * Input panel for stdin
- */
 export function InputPanel({ value, onChange }: InputPanelProps) {
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       onChange(e.target.value);
     },
-    [onChange]
+    [onChange],
   );
 
   return (

@@ -1,5 +1,3 @@
-// Code execution types
-
 export interface TestCase {
   input: string;
   expectedOutput?: string;
@@ -37,7 +35,6 @@ export interface ExecutionResponse {
   error?: string;
 }
 
-// Language mapping
 export const LANGUAGES: Record<number, { name: string; extension: string }> = {
   71: { name: "Python 3", extension: "py" },
   63: { name: "JavaScript (Node.js)", extension: "js" },
@@ -48,7 +45,6 @@ export const LANGUAGES: Record<number, { name: string; extension: string }> = {
   60: { name: "Go", extension: "go" },
 };
 
-// Judge0 status codes
 export const STATUS_CODES: Record<number, string> = {
   1: "In Queue",
   2: "Processing",

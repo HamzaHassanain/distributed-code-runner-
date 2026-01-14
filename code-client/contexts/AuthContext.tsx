@@ -8,7 +8,12 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import type { CurrentUser, AuthUser, GuestUser, AuthResponse } from "@/lib/auth/types";
+import type {
+  CurrentUser,
+  AuthUser,
+  GuestUser,
+  AuthResponse,
+} from "@/lib/auth/types";
 
 const TOKEN_KEY = "auth_token";
 const GUEST_KEY = "is_guest";
@@ -19,11 +24,14 @@ interface AuthContextType {
   isLoading: boolean;
   isGuest: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
   signup: (
     email: string,
     password: string,
-    name: string
+    name: string,
   ) => Promise<{ success: boolean; error?: string }>;
   continueAsGuest: () => void;
   logout: () => void;
@@ -37,11 +45,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
 
-  // Initialize auth state from localStorage
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // Check for guest mode
         const guestMode = localStorage.getItem(GUEST_KEY);
         if (guestMode === "true") {
           const guestUser: GuestUser = {
@@ -57,14 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Check for stored token
         const storedToken = localStorage.getItem(TOKEN_KEY);
         if (!storedToken) {
           setIsLoading(false);
           return;
         }
 
-        // Verify token with backend
         const response = await fetch("/api/auth/me", {
           headers: {
             Authorization: `Bearer ${storedToken}`,
@@ -77,7 +81,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(data.user);
           setToken(storedToken);
         } else {
-          // Invalid token, clear storage
           localStorage.removeItem(TOKEN_KEY);
         }
       } catch (error) {
@@ -93,16 +96,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const storeToken = useCallback((newToken: string) => {
     localStorage.setItem(TOKEN_KEY, newToken);
-    // Also set as cookie for SSR (optional)
+
     const expires = new Date();
-    expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000);
     document.cookie = `${TOKEN_KEY}=${encodeURIComponent(newToken)}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
   }, []);
 
   const clearAuth = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(GUEST_KEY);
-    // Clear cookie
+
     document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
     setUser(null);
     setToken(null);
@@ -110,7 +113,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(
-    async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    async (
+      email: string,
+      password: string,
+    ): Promise<{ success: boolean; error?: string }> => {
       try {
         const response = await fetch("/api/auth/login", {
           method: "POST",
@@ -135,14 +141,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: "Network error. Please try again." };
       }
     },
-    [storeToken]
+    [storeToken],
   );
 
   const signup = useCallback(
     async (
       email: string,
       password: string,
-      name: string
+      name: string,
     ): Promise<{ success: boolean; error?: string }> => {
       try {
         const response = await fetch("/api/auth/signup", {
@@ -168,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: "Network error. Please try again." };
       }
     },
-    [storeToken]
+    [storeToken],
   );
 
   const continueAsGuest = useCallback(() => {

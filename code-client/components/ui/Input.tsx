@@ -8,12 +8,9 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   helperText?: string;
 }
 
-/**
- * Reusable input component with label, error state, and helper text
- */
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   { label, error, helperText, id, className = "", ...props },
-  ref
+  ref,
 ) {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
 

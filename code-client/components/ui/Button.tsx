@@ -29,47 +29,46 @@ const sizeClasses: Record<ButtonSize, string> = {
   lg: "text-base px-6 py-3",
 };
 
-/**
- * Reusable button component with variants, sizes, loading state, and icons
- */
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  {
-    variant = "primary",
-    size = "md",
-    isLoading = false,
-    leftIcon,
-    rightIcon,
-    fullWidth = false,
-    disabled,
-    children,
-    className = "",
-    ...props
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  function Button(
+    {
+      variant = "primary",
+      size = "md",
+      isLoading = false,
+      leftIcon,
+      rightIcon,
+      fullWidth = false,
+      disabled,
+      children,
+      className = "",
+      ...props
+    },
+    ref,
+  ) {
+    return (
+      <button
+        ref={ref}
+        disabled={disabled || isLoading}
+        className={`btn ${variantClasses[variant]} ${sizeClasses[size]} ${
+          fullWidth ? "w-full" : ""
+        } ${className}`}
+        {...props}
+      >
+        {isLoading ? (
+          <>
+            <Spinner size="sm" />
+            {children}
+          </>
+        ) : (
+          <>
+            {leftIcon && <span className="flex-shrink-0">{leftIcon}</span>}
+            {children}
+            {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
+          </>
+        )}
+      </button>
+    );
   },
-  ref
-) {
-  return (
-    <button
-      ref={ref}
-      disabled={disabled || isLoading}
-      className={`btn ${variantClasses[variant]} ${sizeClasses[size]} ${
-        fullWidth ? "w-full" : ""
-      } ${className}`}
-      {...props}
-    >
-      {isLoading ? (
-        <>
-          <Spinner size="sm" />
-          {children}
-        </>
-      ) : (
-        <>
-          {leftIcon && <span className="flex-shrink-0">{leftIcon}</span>}
-          {children}
-          {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
-        </>
-      )}
-    </button>
-  );
-});
+);
 
 export default Button;

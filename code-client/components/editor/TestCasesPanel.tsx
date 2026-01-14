@@ -9,12 +9,13 @@ interface TestCasesPanelProps {
   testResults: TestCaseResult[] | null;
   onAddTestCase: () => void;
   onRemoveTestCase: (index: number) => void;
-  onUpdateTestCase: (index: number, field: "input" | "expectedOutput", value: string) => void;
+  onUpdateTestCase: (
+    index: number,
+    field: "input" | "expectedOutput",
+    value: string,
+  ) => void;
 }
 
-/**
- * Test cases panel with add/edit/remove functionality
- */
 export function TestCasesPanel({
   testCases,
   testResults,
@@ -56,12 +57,15 @@ export function TestCasesPanel({
   );
 }
 
-// Test Case Item Sub-component
 interface TestCaseItemProps {
   index: number;
   testCase: TestCase;
   result?: TestCaseResult;
-  onUpdate: (index: number, field: "input" | "expectedOutput", value: string) => void;
+  onUpdate: (
+    index: number,
+    field: "input" | "expectedOutput",
+    value: string,
+  ) => void;
   onRemove: (index: number) => void;
 }
 
@@ -76,14 +80,14 @@ function TestCaseItem({
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       onUpdate(index, "input", e.target.value);
     },
-    [index, onUpdate]
+    [index, onUpdate],
   );
 
   const handleOutputChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       onUpdate(index, "expectedOutput", e.target.value);
     },
-    [index, onUpdate]
+    [index, onUpdate],
   );
 
   const handleRemove = useCallback(() => {
@@ -129,7 +133,12 @@ function TestCaseItem({
         />
         {result && (
           <TestCaseActualOutput
-            output={result.stdout || result.stderr || result.compile_output || "(no output)"}
+            output={
+              result.stdout ||
+              result.stderr ||
+              result.compile_output ||
+              "(no output)"
+            }
           />
         )}
       </div>
@@ -137,7 +146,6 @@ function TestCaseItem({
   );
 }
 
-// Test Case Field Sub-component
 interface TestCaseFieldProps {
   label: string;
   value: string;
@@ -153,7 +161,9 @@ function TestCaseField({
 }: TestCaseFieldProps) {
   return (
     <div>
-      <label className="mb-1 block text-xs text-[var(--foreground-muted)]">{label}</label>
+      <label className="mb-1 block text-xs text-[var(--foreground-muted)]">
+        {label}
+      </label>
       <textarea
         value={value}
         onChange={onChange}
@@ -164,7 +174,6 @@ function TestCaseField({
   );
 }
 
-// Test Case Actual Output Sub-component
 function TestCaseActualOutput({ output }: { output: string }) {
   return (
     <div>
@@ -178,7 +187,6 @@ function TestCaseActualOutput({ output }: { output: string }) {
   );
 }
 
-// Test Summary Sub-component
 interface TestSummaryProps {
   results: TestCaseResult[];
 }
@@ -192,8 +200,7 @@ function TestSummary({ results }: TestSummaryProps) {
   return (
     <div className="border-t border-[var(--border)] p-3">
       <span className="text-sm font-medium">
-        Results:{" "}
-        <span className="text-[var(--success)]">{passed} passed</span>
+        Results: <span className="text-[var(--success)]">{passed} passed</span>
         {" / "}
         <span className="text-[var(--error)]">{failed} failed</span>
       </span>

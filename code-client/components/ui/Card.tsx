@@ -8,9 +8,6 @@ interface CardProps {
   className?: string;
 }
 
-/**
- * Card container component with variants
- */
 export function Card({
   children,
   variant = "default",
@@ -18,11 +15,7 @@ export function Card({
 }: CardProps) {
   const variantClass = variant === "glass" ? "card-glass" : "card";
 
-  return (
-    <div className={`${variantClass} ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`${variantClass} ${className}`}>{children}</div>;
 }
 
 export default Card;

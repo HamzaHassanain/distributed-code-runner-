@@ -8,7 +8,9 @@ export type AuthMode = "login" | "signup";
 
 interface AuthFormProps {
   mode: AuthMode;
-  onSubmit: (data: AuthFormData) => Promise<{ success: boolean; error?: string }>;
+  onSubmit: (
+    data: AuthFormData,
+  ) => Promise<{ success: boolean; error?: string }>;
   onGuestAccess: () => void;
   isSubmitting?: boolean;
 }
@@ -19,10 +21,6 @@ export interface AuthFormData {
   name?: string;
 }
 
-/**
- * Auth form component with login/signup modes
- * Handles form state, validation, and submission
- */
 export function AuthForm({
   mode,
   onSubmit,
@@ -49,23 +47,27 @@ export function AuthForm({
         setError(result.error || "An error occurred");
       }
     },
-    [email, password, name, mode, onSubmit]
+    [email, password, name, mode, onSubmit],
   );
 
   const handleEmailChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
   }, []);
 
-  const handlePasswordChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-  }, []);
+  const handlePasswordChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setPassword(e.target.value);
+    },
+    [],
+  );
 
   const handleNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
   }, []);
 
   const submitButtonText = mode === "login" ? "Sign In" : "Create Account";
-  const loadingButtonText = mode === "login" ? "Signing in..." : "Creating account...";
+  const loadingButtonText =
+    mode === "login" ? "Signing in..." : "Creating account...";
 
   return (
     <div className="space-y-6">

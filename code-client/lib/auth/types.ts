@@ -1,7 +1,5 @@
-// Auth type definitions
 import type { ObjectId } from "mongodb";
 
-// User type for client-side (string _id)
 export interface User {
   _id: string;
   email: string;
@@ -11,7 +9,6 @@ export interface User {
   updatedAt: Date;
 }
 
-// MongoDB document type (ObjectId _id)
 export interface UserDocument {
   _id?: ObjectId;
   email: string;

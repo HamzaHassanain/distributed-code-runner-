@@ -7,9 +7,6 @@ interface OutputPanelProps {
   output: ExecutionResult | null;
 }
 
-/**
- * Output panel component for displaying code execution results
- */
 export function OutputPanel({ output }: OutputPanelProps) {
   const statusInfo = useMemo(() => {
     if (!output) return null;
@@ -27,7 +24,6 @@ export function OutputPanel({ output }: OutputPanelProps) {
   );
 }
 
-// Panel Header Sub-component
 interface PanelHeaderProps {
   title: string;
   statusInfo: { color: string; memoryMB: string } | null;
@@ -37,7 +33,9 @@ interface PanelHeaderProps {
 function PanelHeader({ title, statusInfo, output }: PanelHeaderProps) {
   return (
     <div className="flex items-center justify-between border-b border-[var(--border)] px-3 py-2">
-      <span className="text-xs font-medium text-[var(--foreground-muted)]">{title}</span>
+      <span className="text-xs font-medium text-[var(--foreground-muted)]">
+        {title}
+      </span>
       {output && statusInfo && (
         <div className="flex items-center gap-3 text-xs">
           <span className="font-medium" style={{ color: statusInfo.color }}>
@@ -52,7 +50,6 @@ function PanelHeader({ title, statusInfo, output }: PanelHeaderProps) {
   );
 }
 
-// Output Content Sub-component
 function OutputContent({ output }: { output: ExecutionResult | null }) {
   if (!output) {
     return (
@@ -69,7 +66,11 @@ function OutputContent({ output }: { output: ExecutionResult | null }) {
   return (
     <div className="flex-1 overflow-auto bg-[var(--background-secondary)] p-3 font-mono text-sm">
       {output.compile_output && (
-        <OutputSection title="Compilation Error" content={output.compile_output} isError />
+        <OutputSection
+          title="Compilation Error"
+          content={output.compile_output}
+          isError
+        />
       )}
       {output.stderr && (
         <OutputSection title="Error" content={output.stderr} isError />
@@ -86,7 +87,6 @@ function OutputContent({ output }: { output: ExecutionResult | null }) {
   );
 }
 
-// Output Section Sub-component
 interface OutputSectionProps {
   title: string;
   content: string;
@@ -102,7 +102,6 @@ function OutputSection({ title, content, isError }: OutputSectionProps) {
   );
 }
 
-// Helper function
 function getStatusColor(statusId: number): string {
   if (statusId === 3) return "var(--success)";
   if (statusId === 4 || statusId >= 7) return "var(--error)";

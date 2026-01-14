@@ -1,7 +1,5 @@
 "use client";
 
-// Reusable icon components definitions (standard functions, no memo)
-
 export function PlayIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 20 20">
@@ -12,7 +10,12 @@ export function PlayIcon({ className = "h-4 w-4" }: { className?: string }) {
 
 export function GuestIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -25,23 +28,48 @@ export function GuestIcon({ className = "h-4 w-4" }: { className?: string }) {
 
 export function CloseIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M6 18L18 6M6 6l12 12"
+      />
     </svg>
   );
 }
 
 export function CheckIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M5 13l4 4L19 7"
+      />
     </svg>
   );
 }
 
 export function ErrorIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -52,10 +80,24 @@ export function ErrorIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-export function ChevronDownIcon({ className = "h-4 w-4" }: { className?: string }) {
+export function ChevronDownIcon({
+  className = "h-4 w-4",
+}: {
+  className?: string;
+}) {
   return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19 9l-7 7-7-7"
+      />
     </svg>
   );
 }

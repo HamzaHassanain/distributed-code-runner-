@@ -1,14 +1,10 @@
 import { type ReactNode } from "react";
-import { Logo } from "@/components/ui"; // Import Logo properly
+import { Logo } from "@/components/ui";
 
 interface AuthLayoutProps {
   children: ReactNode;
 }
 
-/**
- * Layout wrapper for authentication pages
- * Provides centered layout with gradient background and branding
- */
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="gradient-bg flex min-h-screen flex-col items-center justify-center p-4">

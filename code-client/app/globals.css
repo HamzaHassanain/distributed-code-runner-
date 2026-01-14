@@ -128,7 +128,9 @@ body {
   border-radius: 0.5rem;
   color: var(--foreground);
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .input:focus {
@@ -235,7 +237,12 @@ body {
 
 /* Gradient backgrounds */
 .gradient-bg {
-  background: linear-gradient(135deg, var(--background) 0%, #0f172a 50%, #1e1b4b 100%);
+  background: linear-gradient(
+    135deg,
+    var(--background) 0%,
+    #0f172a 50%,
+    #1e1b4b 100%
+  );
 }
 
 .gradient-accent {

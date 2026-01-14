@@ -19,9 +19,6 @@ interface EditorHeaderProps {
   runIcon?: React.ReactNode;
 }
 
-/**
- * Editor header with language selector, run button, and user info
- */
 export function EditorHeader({
   languageId,
   onLanguageChange,
@@ -37,12 +34,11 @@ export function EditorHeader({
   onSignup,
   runIcon,
 }: EditorHeaderProps) {
-  // Simplified handler for Custom Select (direct value)
   const handleLanguageChange = useCallback(
     (value: string | number) => {
       onLanguageChange(Number(value));
     },
-    [onLanguageChange]
+    [onLanguageChange],
   );
 
   const languageOptions = useMemo(
@@ -51,11 +47,17 @@ export function EditorHeader({
         value: lang.id,
         label: lang.name,
       })),
-    [languages]
+    [languages],
   );
 
-  const handleStandardMode = useCallback(() => onViewModeChange("standard"), [onViewModeChange]);
-  const handleTestCasesMode = useCallback(() => onViewModeChange("testcases"), [onViewModeChange]);
+  const handleStandardMode = useCallback(
+    () => onViewModeChange("standard"),
+    [onViewModeChange],
+  );
+  const handleTestCasesMode = useCallback(
+    () => onViewModeChange("testcases"),
+    [onViewModeChange],
+  );
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-[var(--border)] px-4">
@@ -105,7 +107,6 @@ export function EditorHeader({
   );
 }
 
-// View Mode Toggle Sub-component
 interface ViewModeToggleProps {
   viewMode: "standard" | "testcases";
   onStandard: () => void;
@@ -144,7 +145,6 @@ export function ViewModeToggle({
   );
 }
 
-// User Info Sub-component
 interface UserInfoProps {
   user?: { name: string } | null;
   isGuest: boolean;
@@ -152,18 +152,15 @@ interface UserInfoProps {
   onSignup: () => void;
 }
 
-export function UserInfo({
-  user,
-  isGuest,
-  onLogout,
-  onSignup,
-}: UserInfoProps) {
+export function UserInfo({ user, isGuest, onLogout, onSignup }: UserInfoProps) {
   return (
     <div className="flex items-center gap-3">
       {isGuest ? (
         <Badge variant="warning">Guest Mode</Badge>
       ) : user ? (
-        <span className="text-sm text-[var(--foreground-muted)]">{user.name}</span>
+        <span className="text-sm text-[var(--foreground-muted)]">
+          {user.name}
+        </span>
       ) : null}
 
       {isGuest ? (

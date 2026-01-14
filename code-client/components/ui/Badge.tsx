@@ -17,9 +17,6 @@ const variantClasses: Record<BadgeVariant, string> = {
   info: "badge-info",
 };
 
-/**
- * Badge component for status indicators
- */
 export function Badge({
   children,
   variant = "info",

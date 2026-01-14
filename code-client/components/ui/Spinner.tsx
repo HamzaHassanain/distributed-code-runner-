@@ -11,13 +11,7 @@ const sizeClasses = {
   lg: "h-6 w-6",
 } as const;
 
-/**
- * Animated loading spinner component
- */
-export function Spinner({ 
-  size = "sm", 
-  className = "" 
-}: SpinnerProps) {
+export function Spinner({ size = "sm", className = "" }: SpinnerProps) {
   return (
     <svg
       className={`animate-spin ${sizeClasses[size]} ${className}`}

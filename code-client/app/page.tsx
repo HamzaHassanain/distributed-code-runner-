@@ -4,23 +4,18 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Spinner, Tabs } from "@/components/ui";
-import { AuthForm, AuthLayout, type AuthFormData, type AuthMode } from "@/components/auth";
+import {
+  AuthForm,
+  AuthLayout,
+  type AuthFormData,
+  type AuthMode,
+} from "@/components/auth";
 
-// Tab configuration
 const AUTH_TABS = [
   { value: "login", label: "Sign In" },
   { value: "signup", label: "Sign Up" },
 ] as const;
 
-/**
- * Authentication Page
- * 
- * Features:
- * - Login/Signup toggle with smooth transitions
- * - Guest access option
- * - Auto-redirect for authenticated users
- * - Form validation and error handling
- */
 export default function AuthPage() {
   const router = useRouter();
   const { user, isLoading, login, signup, continueAsGuest } = useAuth();
@@ -28,7 +23,6 @@ export default function AuthPage() {
   const [mode, setMode] = useState<AuthMode>("login");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (!isLoading && user) {
       if (!user.isGuest) {
@@ -37,7 +31,6 @@ export default function AuthPage() {
     }
   }, [user, isLoading, router]);
 
-  // Handle form submission
   const handleSubmit = useCallback(
     async (data: AuthFormData) => {
       setIsSubmitting(true);
@@ -62,35 +55,30 @@ export default function AuthPage() {
         setIsSubmitting(false);
       }
     },
-    [mode, login, signup, router]
+    [mode, login, signup, router],
   );
 
-  // Handle mode change
   const handleModeChange = useCallback((value: string) => {
     setMode(value as AuthMode);
   }, []);
 
-  // Handle guest access
   const handleGuestAccess = useCallback(() => {
     continueAsGuest();
     router.push("/editor");
   }, [continueAsGuest, router]);
 
-  // Handle toggle link click
   const handleToggleMode = useCallback(() => {
     setMode((prev) => (prev === "login" ? "signup" : "login"));
   }, []);
 
-  // Toggle link content
   const toggleContent = useMemo(
     () =>
       mode === "login"
         ? { text: "Don't have an account? ", action: "Sign up" }
         : { text: "Already have an account? ", action: "Sign in" },
-    [mode]
+    [mode],
   );
 
-  // Show loading state
   if (isLoading) {
     return (
       <div className="gradient-bg flex min-h-screen items-center justify-center">

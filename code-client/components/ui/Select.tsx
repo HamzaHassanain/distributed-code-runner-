@@ -18,10 +18,6 @@ interface SelectProps {
   disabled?: boolean;
 }
 
-/**
- * Custom styled select component
- * Replaces native select with a fully styleable dropdown
- */
 export function Select({
   label,
   value,
@@ -34,10 +30,12 @@ export function Select({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -60,7 +58,7 @@ export function Select({
           {label}
         </label>
       )}
-      
+
       {/* Trigger Button */}
       <button
         type="button"
@@ -70,7 +68,13 @@ export function Select({
           disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
         } ${isOpen ? "border-[var(--accent)] ring-1 ring-[var(--accent)]" : ""}`}
       >
-        <span className={selectedOption ? "text-[var(--foreground)]" : "text-[var(--foreground-muted)]"}>
+        <span
+          className={
+            selectedOption
+              ? "text-[var(--foreground)]"
+              : "text-[var(--foreground-muted)]"
+          }
+        >
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDownIcon

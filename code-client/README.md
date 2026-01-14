@@ -7,31 +7,34 @@ It connects to the **Runner API Gateway** for execution and **MongoDB** for user
 ## Features
 
 ### Authentication & Sessions
-*   **Secure Sign Up/Login**: JWT-based session management.
-*   **Guest Access**: Immediate "Continue as Guest" mode for ephemeral sessions.
-*   **Persistent State**: User code history and settings are saved to MongoDB.
+
+- **Secure Sign Up/Login**: JWT-based session management.
+- **Guest Access**: Immediate "Continue as Guest" mode for ephemeral sessions.
+- **Persistent State**: User code history and settings are saved to MongoDB.
 
 ### Code Editor
-*   **Multi-Language Support**: Python, JavaScript, C++, Java, TypeScript, and more.
-*   **Syntax Highlighting**: Powered by **CodeMirror 6** for a rich editing experience.
-*   **Dual View Modes**:
-    *   **Standard**: Simple stdin/stdout interaction.
-    *   **Test Cases**: Create, run, and validate against multiple I/O test cases.
+
+- **Multi-Language Support**: Python, JavaScript, C++, Java, TypeScript, and more.
+- **Syntax Highlighting**: Powered by **CodeMirror 6** for a rich editing experience.
+- **Dual View Modes**:
+  - **Standard**: Simple stdin/stdout interaction.
+  - **Test Cases**: Create, run, and validate against multiple I/O test cases.
 
 ### Performance & UX
-*   **Optimized Builds**: Using Next.js `output: "standalone"` for minimal Docker images.
-*   **Modular Architecture**: Component-based design for maintainability.
-*   **Responsive UI**: Fully responsive layout with a custom dark theme.
+
+- **Optimized Builds**: Using Next.js `output: "standalone"` for minimal Docker images.
+- **Modular Architecture**: Component-based design for maintainability.
+- **Responsive UI**: Fully responsive layout with a custom dark theme.
 
 ---
 
 ## Tech Stack
 
-*   **Framework**: [Next.js 16](https://nextjs.org/) (App Directory)
-*   **Language**: TypeScript
-*   **Styling**: Tailwind CSS + CSS Variables
-*   **Editor Engine**: [CodeMirror 6](https://codemirror.net/) (`@uiw/react-codemirror`)
-*   **Icons**: Custom SVG Component Library
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Directory)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + CSS Variables
+- **Editor Engine**: [CodeMirror 6](https://codemirror.net/) (`@uiw/react-codemirror`)
+- **Icons**: Custom SVG Component Library
 
 ---
 
@@ -58,10 +61,12 @@ code-client/
 ## Getting Started
 
 ### Prerequisites
-*   Node.js 18+ (if running without Docker)
-*   Docker & Docker Compose (recommended)
+
+- Node.js 18+ (if running without Docker)
+- Docker & Docker Compose (recommended)
 
 ### Running with Docker (Recommended)
+
 This client is designed to run as part of the larger distributed system. Use the root `Makefile` to start the full stack:
 
 ```bash
@@ -70,15 +75,18 @@ make start-all
 ```
 
 ### Running Locally (Development)
+
 To run the client in isolation (connected to local services):
 
 1.  **Install Dependencies**:
+
     ```bash
     npm install
     ```
 
 2.  **Configure Environment**:
     Create a `.env.local` file:
+
     ```env
     MONGODB_URI=mongodb://localhost:27017/runner_db
     JWT_SECRET=your_development_secret
@@ -91,4 +99,3 @@ To run the client in isolation (connected to local services):
     Access the app at `http://localhost:3000`.
 
 ---
-
