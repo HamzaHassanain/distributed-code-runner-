@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Spinner } from "@/components/ui";
@@ -12,6 +12,8 @@ import {
   OutputPanel,
   TestCasesPanel,
 } from "@/components/editor";
+import type { CodeEditorHandle } from "@/components/editor/CodeEditor";
+import type { InputPanelHandle } from "@/components/editor/InputPanel";
 import {
   LANGUAGES,
   type ExecutionResult,
@@ -92,9 +94,9 @@ export default function EditorPage() {
   const router = useRouter();
   const { user, token, isLoading, isGuest, logout } = useAuth();
 
-  const [code, setCode] = useState("");
+  const editorRef = useRef<CodeEditorHandle>(null);
+  const inputRef = useRef<InputPanelHandle>(null);
   const [languageId, setLanguageId] = useState(71);
-  const [stdin, setStdin] = useState("");
   const [output, setOutput] = useState<ExecutionResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
@@ -106,7 +108,7 @@ export default function EditorPage() {
   useEffect(() => {
     const template = CODE_TEMPLATES[languageId];
     if (template) {
-      setCode(template);
+      editorRef.current?.setValue(template);
     }
   }, [languageId]);
 
@@ -130,6 +132,11 @@ export default function EditorPage() {
   );
 
   const handleRun = useCallback(async () => {
+    const code = editorRef.current?.getValue();
+    if (!code) return; // Or handle empty code error
+
+    const stdin = inputRef.current?.getValue() || "";
+
     setIsRunning(true);
     setOutput(null);
 
@@ -152,9 +159,12 @@ export default function EditorPage() {
     } finally {
       setIsRunning(false);
     }
-  }, [code, languageId, stdin, requestHeaders]);
+  }, [languageId, requestHeaders]);
 
   const handleRunTests = useCallback(async () => {
+    const code = editorRef.current?.getValue();
+    if (!code) return;
+
     setIsRunningTests(true);
     setTestResults(null);
 
@@ -174,7 +184,7 @@ export default function EditorPage() {
     } finally {
       setIsRunningTests(false);
     }
-  }, [code, languageId, testCases, requestHeaders]);
+  }, [languageId, testCases, requestHeaders]);
 
   const handleRunClick = useCallback(() => {
     if (viewMode === "standard") {
@@ -249,14 +259,18 @@ export default function EditorPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Code Editor Panel */}
         <div className="flex w-1/2 flex-col border-r border-[var(--border)]">
-          <CodeEditor value={code} onChange={setCode} languageId={languageId} />
+          <CodeEditor 
+            ref={editorRef} 
+            initialValue={CODE_TEMPLATES[languageId]} 
+            languageId={languageId} 
+          />
         </div>
 
         {/* Right Panel */}
         <div className="flex w-1/2 flex-col">
           {viewMode === "standard" ? (
             <>
-              <InputPanel value={stdin} onChange={setStdin} />
+              <InputPanel ref={inputRef} />
               <OutputPanel output={output} />
             </>
           ) : (
@@ -276,11 +290,13 @@ export default function EditorPage() {
 
 function createErrorResult(message: string): ExecutionResult {
   return {
+    output: null,
     stdout: null,
     stderr: message,
-    compile_output: null,
+    compileOutput: null,
     time: "0.00",
     memory: 0,
-    status: { id: 13, description: "Internal Error" },
+    status: "Internal Error",
+    statusId: 13,
   };
 }
