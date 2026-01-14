@@ -11,7 +11,7 @@ export function OutputPanel({ output }: OutputPanelProps) {
   const statusInfo = useMemo(() => {
     if (!output) return null;
     return {
-      color: getStatusColor(output.status.id),
+      color: getStatusColor(output.statusId),
       memoryMB: (output.memory / 1024).toFixed(1),
     };
   }, [output]);
@@ -39,7 +39,7 @@ function PanelHeader({ title, statusInfo, output }: PanelHeaderProps) {
       {output && statusInfo && (
         <div className="flex items-center gap-3 text-xs">
           <span className="font-medium" style={{ color: statusInfo.color }}>
-            {output.status.description}
+            {output.status}
           </span>
           <span className="text-[var(--foreground-muted)]">
             {output.time}s | {statusInfo.memoryMB} MB
@@ -61,28 +61,53 @@ function OutputContent({ output }: { output: ExecutionResult | null }) {
     );
   }
 
-  const hasOutput = output.stdout || output.stderr || output.compile_output;
+  const { statusId, compileOutput, stderr, output: stdout, status } = output;
+  console.log(output);
+  // 1. Compilation Error (Status 6)
+  if (statusId === 6) {
+    const errorContent = compileOutput || stderr || stdout || "Compilation failed (no details available)";
+    return (
+      <div className="flex-1 overflow-auto bg-[var(--background-secondary)] p-3 font-mono text-sm">
+        <OutputSection
+          title="Compilation Error"
+          content={errorContent}
+          isError
+        />
+      </div>
+    );
+  }
+
+  // 2. Runtime Errors (Status >= 7)
+  // Judge0 status 3 is Accepted.
+  if (statusId >= 7) {
+    const errorContent = stderr || stdout || compileOutput || "Runtime error (no details available)";
+    return (
+      <div className="flex-1 overflow-auto bg-[var(--background-secondary)] p-3 font-mono text-sm">
+        <OutputSection 
+          title={status || "Runtime Error"} 
+          content={errorContent} 
+          isError 
+        />
+      </div>
+    );
+  }
+
+  // 3. Accepted or other non-error statuses (Status 3, etc)
+  const content = stdout || stderr || compileOutput; 
+  
+  if (content) {
+    return (
+      <div className="flex-1 overflow-auto bg-[var(--background-secondary)] p-3 font-mono text-sm">
+        <pre className="whitespace-pre-wrap text-[var(--foreground)]">
+          {content}
+        </pre>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-auto bg-[var(--background-secondary)] p-3 font-mono text-sm">
-      {output.compile_output && (
-        <OutputSection
-          title="Compilation Error"
-          content={output.compile_output}
-          isError
-        />
-      )}
-      {output.stderr && (
-        <OutputSection title="Error" content={output.stderr} isError />
-      )}
-      {output.stdout && (
-        <pre className="whitespace-pre-wrap text-[var(--foreground)]">
-          {output.stdout}
-        </pre>
-      )}
-      {!hasOutput && (
-        <span className="text-[var(--foreground-muted)]">No output</span>
-      )}
+      <span className="text-[var(--foreground-muted)]">No output</span>
     </div>
   );
 }

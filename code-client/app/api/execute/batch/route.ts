@@ -55,10 +55,11 @@ export async function POST(
         return {
             stdout: r.output,
             stderr: r.stderr,
-            compile_output: r.compileOutput,
+            compileOutput: r.compileOutput,
             time: r.time,
             memory: r.memory,
-            status: { id: r.statusId, description: r.status },
+            status: r.status,
+            statusId: r.statusId,
             input: originalTestCase.input,
             expectedOutput: originalTestCase.expectedOutput,
             passed

@@ -136,7 +136,7 @@ function TestCaseItem({
             output={
               result.stdout ||
               result.stderr ||
-              result.compile_output ||
+              result.compileOutput ||
               "(no output)"
             }
           />

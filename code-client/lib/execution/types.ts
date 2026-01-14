@@ -11,15 +11,14 @@ export interface ExecutionRequest {
 }
 
 export interface ExecutionResult {
+  output: string | null;
   stdout: string | null;
   stderr: string | null;
-  compile_output: string | null;
+  compileOutput: string | null;
   time: string;
   memory: number;
-  status: {
-    id: number;
-    description: string;
-  };
+  status: string;
+  statusId: number;
 }
 
 export interface TestCaseResult extends ExecutionResult {

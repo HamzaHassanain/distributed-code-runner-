@@ -30,7 +30,7 @@ export interface SubmissionResult {
   token?: string;
   stdout: string | null;
   stderr: string | null;
-  compile_output: string | null;
+  compileOutput: string | null;
   message: string | null;
   status: {
     id: number;
@@ -359,7 +359,7 @@ class Judge0Service {
         ...data,
         stdout: this.decodeBase64(data.stdout),
         stderr: this.decodeBase64(data.stderr),
-        compile_output: this.decodeBase64(data.compile_output),
+        compileOutput: this.decodeBase64(data.compileOutput),
         message: this.decodeBase64(data.message),
       };
 

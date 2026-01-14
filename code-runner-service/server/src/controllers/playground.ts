@@ -36,7 +36,7 @@ export async function submitPlayground(req: Request, res: Response) {
       statusId: result.status.id,
       output: result.stdout,
       stderr: result.stderr,
-      compileOutput: result.compile_output,
+      compileOutput: result.compileOutput,
       time: result.time,
       memory: result.memory,
     };
