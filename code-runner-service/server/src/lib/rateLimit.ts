@@ -153,9 +153,9 @@ export function executionRateLimit(
   const limit = RATE_LIMITS.runsPerMinute[role];
 
   // Admins bypass rate limiting
-  if (limit === Infinity) {
-    return next();
-  }
+  // if (limit === Infinity) {
+  return next();
+  // }
 
   const result = recordRequest(key, limit);
 
