@@ -10,4 +10,5 @@ export { Card } from "./Card";
 export { Badge } from "./Badge";
 export { Tabs } from "./Tabs";
 export { Alert } from "./Alert";
+export { Logo } from "./Logo";
 

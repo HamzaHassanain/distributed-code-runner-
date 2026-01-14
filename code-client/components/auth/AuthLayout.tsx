@@ -1,6 +1,5 @@
-"use client";
-
 import { type ReactNode } from "react";
+import { Logo } from "@/components/ui"; // Import Logo properly
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -15,9 +14,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
     <div className="gradient-bg flex min-h-screen flex-col items-center justify-center p-4">
       {/* Logo / Brand */}
       <div className="mb-8 text-center animate-fadeIn">
-        <h1 className="text-4xl font-bold tracking-tight">
-          <span className="gradient-accent bg-clip-text text-transparent">CodeRunner</span>
-        </h1>
+        <Logo size="xl" className="justify-center" />
         <p className="mt-2 text-[var(--foreground-muted)]">
           Write, run, and test your code online
         </p>
