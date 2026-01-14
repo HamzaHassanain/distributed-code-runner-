@@ -10,6 +10,8 @@ interface ProxyOptions {
   request: Request;
 }
 
+const AUTHN_TOKEN = process.env.AUTHN_TOKEN;
+
 export async function proxyToRunnerService<T = any>(
   { path, body, request }: ProxyOptions
 ): Promise<NextResponse<T | { success: false; error: string }>> {
@@ -21,6 +23,7 @@ export async function proxyToRunnerService<T = any>(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Auth-Token": AUTHN_TOKEN || "", 
         ...(authHeader ? { Authorization: authHeader } : {}),
       },
       body: JSON.stringify(body),
