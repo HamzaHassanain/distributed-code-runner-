@@ -31,7 +31,9 @@ export default function AuthPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!isLoading && user) {
-      router.push("/editor");
+      if (!user.isGuest) {
+        router.push("/editor");
+      }
     }
   }, [user, isLoading, router]);
 
