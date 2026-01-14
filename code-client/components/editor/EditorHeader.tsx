@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { Badge, Button } from "@/components/ui";
+import { Badge, Button, Logo, Select } from "@/components/ui";
 
 interface EditorHeaderProps {
   languageId: number;
@@ -37,20 +37,20 @@ export function EditorHeader({
   onSignup,
   runIcon,
 }: EditorHeaderProps) {
+  // Simplified handler for Custom Select (direct value)
   const handleLanguageChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      onLanguageChange(Number(e.target.value));
+    (value: string | number) => {
+      onLanguageChange(Number(value));
     },
     [onLanguageChange]
   );
 
   const languageOptions = useMemo(
     () =>
-      languages.map((lang) => (
-        <option key={lang.id} value={lang.id}>
-          {lang.name}
-        </option>
-      )),
+      languages.map((lang) => ({
+        value: lang.id,
+        label: lang.name,
+      })),
     [languages]
   );
 
@@ -60,18 +60,17 @@ export function EditorHeader({
   return (
     <header className="flex h-14 items-center justify-between border-b border-[var(--border)] px-4">
       <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold">
-          <span className="gradient-accent bg-clip-text text-transparent">CodeRunner</span>
-        </h1>
+        <Logo size="sm" />
 
-        {/* Language Selector */}
-        <select
-          value={languageId}
-          onChange={handleLanguageChange}
-          className="select"
-        >
-          {languageOptions}
-        </select>
+        {/* Custom Language Selector */}
+        <div className="w-40">
+          <Select
+            value={languageId}
+            onChange={handleLanguageChange}
+            options={languageOptions}
+            placeholder="Select Language"
+          />
+        </div>
 
         {/* Run Button */}
         <Button
@@ -80,6 +79,7 @@ export function EditorHeader({
           disabled={isRunning}
           isLoading={isRunning}
           leftIcon={!isRunning ? runIcon : undefined}
+          size="sm"
         >
           {isRunning ? "Running..." : runButtonLabel}
         </Button>
